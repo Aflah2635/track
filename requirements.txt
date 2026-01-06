@@ -1,0 +1,6 @@
+Django>=5.0,<6.1
+python-dotenv
+whitenoise
+gunicorn
+xhtml2pdf
+discord.py

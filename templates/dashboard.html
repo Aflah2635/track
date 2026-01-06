@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-header mb-4 flex-between" style="align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h1 style="margin-bottom: 0.5rem;">Dashboard</h1>
+
+        <!-- Account Switcher -->
+        <form method="get" class="account-switcher" style="display: flex; align-items: center; gap: 0.5rem;">
+            <label for="account-select" class="text-muted">Account:</label>
+            <select name="account" id="account-select" onchange="this.form.submit()"
+                style="padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border); font-size: 1rem; min-width: 200px;">
+                {% for acc in accounts %}
+                <option value="{{ acc.id }}" {% if active_account and acc.id == active_account.id %}selected{% endif %}>
+                    {{ acc.name }} {% if acc.user != user %}(Shared){% endif %}
+                </option>
+                {% endfor %}
+            </select>
+            {% if can_share and active_account %}
+            <!-- <a href="{% url 'share_account' active_account.id %}" class="btn btn-sm btn-outline-primary"
+                style="margin-left: 0.5rem;">
+                Share
+            </a> -->
+            {% endif %}
+            <!-- <a href="{% url 'manage_accounts' %}" class="btn btn-sm btn-outline-secondary" style="margin-left: 0.5rem;">
+                Manage Accounts
+            </a> -->
+        </form>
+    </div>
+
+    <div class="actions">
+        {% if can_add_transaction %}
+        <button onclick="document.getElementById('statementModal').style.display='flex'" class="btn btn-outline-primary"
+            style="margin-right: 0.5rem;">
+            Download Statement
+        </button>
+        <a href="{% url 'add_transaction' %}" class="btn btn-primary">New Transaction</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Statement Modal -->
+<div id="statementModal"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div
+        style="background: white; padding: 2rem; border-radius: var(--radius-lg); width: 90%; max-width: 400px; box-shadow: var(--shadow-lg);">
+        <h2 style="margin-top: 0; margin-bottom: 1.5rem;">Download Statement</h2>
+        {% if active_account %}
+        <form action="{% url 'statement_pdf' active_account.id %}" method="get" target="_blank">
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Start Date</label>
+                <input type="date" name="start_date"
+                    style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-md);">
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">End Date</label>
+                <input type="date" name="end_date"
+                    style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-md);">
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Transaction Type</label>
+                <select name="type"
+                    style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-md);">
+                    <option value="ALL">All Transactions</option>
+                    <option value="CREDIT">Credit Only</option>
+                    <option value="DEBIT">Debit Only</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button type="button" onclick="document.getElementById('statementModal').style.display='none'"
+                    class="btn btn-outline-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary"
+                    onclick="document.getElementById('statementModal').style.display='none'">Download PDF</button>
+            </div>
+        </form>
+        {% else %}
+        <p>Please select an account first.</p>
+        <button onclick="document.getElementById('statementModal').style.display='none'"
+            class="btn btn-primary">Close</button>
+        {% endif %}
+    </div>
+</div>
+
+{% if active_account %}
+<div class="summary-grid"
+    style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+    <!-- Balance Card -->
+    <div class="card balance-card" style="grid-column: 1 / -1;">
+        <h3>{{ active_account.name }} Balance</h3>
+        <p class="balance">₹{{ total_balance }}</p>
+        <!-- <small class="text-muted" style="color: rgba(255,255,255,0.8);">{{ active_account.account_number }}</small> -->
+    </div>
+
+    <!-- Credit -->
+    <div class="card" style="border-left: 4px solid var(--success);">
+        <h3 style="font-size: 1rem; color: var(--text-muted); margin-bottom: 0.5rem;">Total Credit</h3>
+        <p style="font-size: 1.5rem; font-weight: 700; color: var(--success);">₹{{ total_credit|default:"0.00" }}</p>
+    </div>
+
+    <!-- Debit -->
+    <div class="card" style="border-left: 4px solid var(--danger);">
+        <h3 style="font-size: 1rem; color: var(--text-muted); margin-bottom: 0.5rem;">Total Debit</h3>
+        <p style="font-size: 1.5rem; font-weight: 700; color: var(--danger);">₹{{ total_debit|default:"0.00" }}</p>
+    </div>
+
+    <!-- Lent -->
+    <div class="card" style="border-left: 4px solid var(--warning);">
+        <h3 style="font-size: 1rem; color: var(--text-muted); margin-bottom: 0.5rem;">Total Lent</h3>
+        <p style="font-size: 1.5rem; font-weight: 700; color: var(--warning);">₹{{ total_lent|default:"0.00" }}</p>
+    </div>
+
+    <!-- Borrowed -->
+    <div class="card" style="border-left: 4px solid var(--brand-500);">
+        <h3 style="font-size: 1rem; color: var(--text-muted); margin-bottom: 0.5rem;">Total Borrowed</h3>
+        <p style="font-size: 1.5rem; font-weight: 700; color: var(--brand-500);">₹{{ total_borrowed|default:"0.00" }}
+        </p>
+    </div>
+</div>
+
+<div class="content-grid" style="margin-top: 2rem;">
+    <!-- Recent Transactions -->
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <div style="padding: 1.5rem; border-bottom: 1px solid var(--border);">
+            <h3>Recent Transactions - {{ active_account.name }}</h3>
+        </div>
+        <div class="table-container">
+            {% if transactions %}
+            <!-- Desktop View: Table -->
+            <div class="desktop-only">
+                <table class="transaction-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Counterparty</th>
+                            <th class="hide-mobile">Description</th>
+                            <th class="text-right">Amount</th>
+                            {% if permission_level == 'FULL' %}
+                            <th></th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in transactions %}
+                        <tr>
+                            <td>{{ t.timestamp|date:"M d, Y" }}</td>
+                            <td><strong style="color: var(--primary-900);">{{ t.title }}</strong></td>
+                            <td><span class="badge type-{{ t.type|lower }}">{{ t.get_type_display }}</span></td>
+                            <td>{{ t.counterparty|default:"-" }}</td>
+                            <td class="hide-mobile" style="color: var(--text-muted);">{{ t.description|truncatechars:30
+                                }}
+                            </td>
+                            <td class="text-right" style="font-weight: 600;">
+                                {% if t.type == 'DEBIT' or t.type == 'LEND' %}
+                                -{{ t.amount }}
+                                {% else %}
+                                +{{ t.amount }}
+                                {% endif %}
+                            </td>
+                            {% if permission_level == 'FULL' %}
+                            <td class="text-right">
+                                <a href="{% url 'edit_transaction' t.id %}" class="btn btn-sm btn-outline-secondary"
+                                    style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</a>
+                                <a href="{% url 'delete_transaction' t.id %}" class="btn btn-sm btn-outline-danger"
+                                    style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: #dc3545; border-color: #dc3545;">Delete</a>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile View: Cards -->
+            <div class="mobile-only" style="padding: 1rem;">
+                <div class="mobile-transaction-list">
+                    {% for t in transactions %}
+                    <div class="mobile-transaction-card">
+                        <div class="mobile-card-header">
+                            <div>
+                                <span class="mobile-card-title">{{ t.title }}</span>
+                                <span class="mobile-card-date">{{ t.timestamp|date:"M d, Y" }}</span>
+                            </div>
+                            <span class="badge type-{{ t.type|lower }}">{{ t.get_type_display }}</span>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-muted); font-size: 0.9rem;">
+                                {% if t.counterparty %}
+                                <span style="margin-right: 0.5rem;">👤 {{ t.counterparty }}</span>
+                                {% endif %}
+                            </span>
+                            <span class="mobile-card-amount"
+                                style="color: {% if t.type == 'DEBIT' or t.type == 'LEND' %}var(--danger){% else %}var(--success){% endif %};">
+                                {% if t.type == 'DEBIT' or t.type == 'LEND' %}
+                                -{{ t.amount }}
+                                {% else %}
+                                +{{ t.amount }}
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        {% if permission_level == 'FULL' %}
+                        <div class="mobile-card-footer">
+                            <a href="{% url 'edit_transaction' t.id %}"
+                                style="color: var(--text-muted); font-size: 0.9rem;">Edit</a>
+                            <a href="{% url 'delete_transaction' t.id %}"
+                                style="color: var(--danger); font-size: 0.9rem;">Delete</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if transactions.has_other_pages %}
+            <div class="pagination" style="display: flex; justify-content: center; gap: 0.5rem; margin: 1.5rem 0;">
+                {% if transactions.has_previous %}
+                <a href="?account={{ active_account.id }}&page={{ transactions.previous_page_number }}"
+                    class="btn btn-sm btn-outline-secondary" style="font-size: 0.875rem;">&laquo; Previous</a>
+                {% endif %}
+
+                <span class="current-page"
+                    style="padding: 0.25rem 0.5rem; align-self: center; font-size: 0.875rem; color: var(--text-muted);">
+                    Page {{ transactions.number }} of {{ transactions.paginator.num_pages }}
+                </span>
+
+                {% if transactions.has_next %}
+                <a href="?account={{ active_account.id }}&page={{ transactions.next_page_number }}"
+                    class="btn btn-sm btn-outline-secondary" style="font-size: 0.875rem;">Next &raquo;</a>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% else %}
+            <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
+                <p>No recent transactions in this account.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="empty-state" style="text-align: center; padding: 4rem;">
+    <h2>No Accounts Found</h2>
+    <p class="text-muted">Create your first account to get started.</p>
+    <a href="{% url 'create_account' %}" class="btn btn-primary" style="margin-top: 1rem;">Create Account</a>
+</div>
+{% endif %}
+{% endblock %}
