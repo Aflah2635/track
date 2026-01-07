@@ -28,15 +28,15 @@
                 </svg>
             </button>
             <ul class="nav-links">
-                <li><a href="{% url 'dashboard' %}"
+                <li><a href="{% url 'dashboard' %}{% if active_account %}?account={{ active_account.id }}{% endif %}"
                         class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a>
                 </li>
-                <li><a href="{% url 'manage_accounts' %}"
+                <li><a href="{% url 'manage_accounts' %}{% if active_account %}?account={{ active_account.id }}{% endif %}"
                         class="nav-link {% if 'accounts' in request.path %}active{% endif %}">Manage Accounts</a></li>
-                <li><a href="{% url 'add_transaction' %}"
+                <li><a href="{% url 'add_transaction' %}{% if active_account %}?account={{ active_account.id }}{% endif %}"
                         class="nav-link {% if 'transaction' in request.path %}active{% endif %}">Transactions</a></li>
                 <li>
-                    <a href="{% url 'notifications:list' %}"
+                    <a href="{% url 'notifications:list' %}{% if active_account %}?account={{ active_account.id }}{% endif %}"
                         class="nav-link {% if 'notifications' in request.path %}active{% endif %} d-flex align-items-center justify-content-between">
                         <span>Notifications</span>
                         {% if notification_count > 0 %}
@@ -47,7 +47,7 @@
                         {% endif %}
                     </a>
                 </li>
-                <li><a href="{% url 'category_list' %}"
+                <li><a href="{% url 'category_list' %}{% if active_account %}?account={{ active_account.id }}{% endif %}"
                         class="nav-link {% if 'categories' in request.path %}active{% endif %}">Categories</a></li>
                 <li style="margin-top: auto; width: 100%;">
                     <form action="{% url 'logout' %}" method="post">

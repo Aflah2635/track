@@ -4,7 +4,7 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Categories & Budgets</h2>
-        <a href="{% url 'category_add' %}" class="btn btn-primary">Add Category</a>
+        <a href="{% url 'category_add' %}{% if active_account %}?account={{ active_account.id }}{% endif %}" class="btn btn-primary">Add Category</a>
     </div>
 
     <div class="row">

@@ -19,7 +19,7 @@ from django.urls import path, include
 from apps.core.views import home, dashboard
 from apps.users.views import SignUpView
 from apps.accounts.views import (
-    AccountCreateView, share_account, 
+    AccountCreateView, share_account, revoke_access,
     AccountListView, AccountUpdateView, AccountDeleteView
 )
 from apps.transactions.views import (
@@ -40,6 +40,7 @@ urlpatterns = [
     path('accounts/manage/', AccountListView.as_view(), name='manage_accounts'),
     path('accounts/create/', AccountCreateView.as_view(), name='create_account'),
     path('accounts/<int:pk>/share/', share_account, name='share_account'),
+    path('accounts/<int:pk>/revoke/<int:user_id>/', revoke_access, name='revoke_access'),
     path('accounts/<int:pk>/update/', AccountUpdateView.as_view(), name='update_account'),
     path('accounts/<int:pk>/delete/', AccountDeleteView.as_view(), name='delete_account'),
     

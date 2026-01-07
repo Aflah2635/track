@@ -7,13 +7,35 @@ from .models import Category
 from .forms import CategoryForm
 from apps.transactions.models import Transaction
 
+from apps.accounts.models import Account, AccountAccess
+
 class CategoryListView(LoginRequiredMixin, ListView):
     model = Category
     template_name = 'categories/category_list.html'
     context_object_name = 'categories'
 
     def get_queryset(self):
-        return Category.objects.filter(user=self.request.user)
+        user = self.request.user
+        account_id = self.request.GET.get('account')
+        
+        if account_id:
+            # Check if user has access to this account
+            has_access = Account.objects.filter(id=account_id, user=user).exists()
+            if not has_access:
+                has_access = AccountAccess.objects.filter(account_id=account_id, user=user).exists()
+            
+            if has_access:
+                # Show:
+                # 1. Own global categories (user=user, account=None)
+                # 2. Categories linked to this account (account_id=account_id) - regardless of owner
+                return Category.objects.filter(
+                    Q(user=user, account__isnull=True) | 
+                    Q(account_id=account_id)
+                ).distinct()
+        
+        # Fallback (All own categories)
+        qs = Category.objects.filter(user=user)
+        return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -45,6 +67,17 @@ class CategoryCreateView(LoginRequiredMixin, CreateView):
     template_name = 'categories/category_form.html'
     success_url = reverse_lazy('category_list')
 
+    def get_initial(self):
+        initial = super().get_initial()
+        if 'account' in self.request.GET:
+            initial['account'] = self.request.GET.get('account')
+        return initial
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def form_valid(self, form):
         form.instance.user = self.request.user
         return super().form_valid(form)
@@ -54,6 +87,11 @@ class CategoryUpdateView(LoginRequiredMixin, UpdateView):
     form_class = CategoryForm
     template_name = 'categories/category_form.html'
     success_url = reverse_lazy('category_list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def get_queryset(self):
         return Category.objects.filter(user=self.request.user)

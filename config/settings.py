@@ -33,8 +33,7 @@ ALLOWED_HOSTS = [
     "aflah263.pythonanywhere.com",
     "127.0.0.1",
     "localhost",
-    "10.158.93.200",
-    "172.18.160.1",
+    "192.168.18.30",
 ]
 
 
@@ -83,6 +82,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'apps.notifications.context_processors.notifications_processor',
+                'apps.core.context_processors.active_account_processor',
             ],
         },
     },

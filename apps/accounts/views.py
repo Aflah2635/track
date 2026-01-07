@@ -57,6 +57,19 @@ def share_account(request, pk):
         'shared_users': shared_users
     })
 
+@login_required
+def revoke_access(request, pk, user_id):
+    account = get_object_or_404(Account, pk=pk, user=request.user)
+    try:
+        access = AccountAccess.objects.get(account=account, user_id=user_id)
+        shared_username = access.user.username
+        access.delete()
+        messages.success(request, f"Access revoked for {shared_username}.")
+    except AccountAccess.DoesNotExist:
+        messages.error(request, "Access record not found.")
+    
+    return redirect('share_account', pk=pk)
+
 from django.views.generic import ListView, UpdateView, DeleteView
 
 class AccountListView(LoginRequiredMixin, ListView):

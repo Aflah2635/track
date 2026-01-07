@@ -23,5 +23,13 @@ class TransactionForm(forms.ModelForm):
         ).values_list('account_id', flat=True)
         shared = Account.objects.filter(id__in=shared_ids)
         
-        self.fields['account'].queryset = (owned | shared).distinct()
-        self.fields['category'].queryset = Category.objects.filter(user=user)
+        # accessible accounts
+        accessible_accounts = (owned | shared).distinct()
+        
+        self.fields['account'].queryset = accessible_accounts
+        
+        # Categories: Own (Global) OR Linked to accessible accounts
+        self.fields['category'].queryset = Category.objects.filter(
+            Q(user=user, account__isnull=True) | 
+            Q(account__in=accessible_accounts)
+        ).distinct()

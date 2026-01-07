@@ -60,9 +60,18 @@
                     <small class="text-muted">{{ access.user.email }}</small>
                 </div>
                 <div style="text-align: right;">
-                    <span class="badge" style="background: var(--surface-2); color: var(--text-main);">{{
-                        access.get_level_display }}</span>
-                    <!-- Revoke button could go here -->
+                    <span class="badge" style="background: var(--surface-2); color: var(--text-main);">
+                        {{ access.get_level_display }}
+                    </span>
+                    <form action="{% url 'revoke_access' account.pk access.user.id %}" method="post" style="display: inline; margin-left: 10px;">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                class="btn btn-danger" 
+                                style="font-size: 0.8rem; padding: 0.2rem 0.6rem; min-height: auto;"
+                                onclick="return confirm('Are you sure you want to revoke access for this user?')">
+                            Revoke
+                        </button>
+                    </form>
                 </div>
             </li>
             {% endfor %}

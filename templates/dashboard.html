@@ -148,9 +148,7 @@
                             <td><strong style="color: var(--primary-900);">{{ t.title }}</strong></td>
                             <td><span class="badge type-{{ t.type|lower }}">{{ t.get_type_display }}</span></td>
                             <td>{{ t.counterparty|default:"-" }}</td>
-                            <td class="hide-mobile" style="color: var(--text-muted);">{{ t.description|truncatechars:30
-                                }}
-                            </td>
+                            <td class="hide-mobile" style="color: var(--text-muted);">{{ t.description|truncatechars:30 }}</td>
                             <td class="text-right" style="font-weight: 600;">
                                 {% if t.type == 'DEBIT' or t.type == 'LEND' %}
                                 -{{ t.amount }}

@@ -31,3 +31,51 @@
     </div>
 </div>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const accountSelect = document.getElementById('id_account');
+        const categorySelect = document.getElementById('id_category');
+        const categoryMap = JSON.parse('{{ category_account_map|safe }}');
+        
+        // Cache original options
+        const allOptions = Array.from(categorySelect.options);
+
+        function filterCategories() {
+            const selectedAccount = accountSelect.value;
+            
+            // Clear current options
+            categorySelect.innerHTML = '';
+            
+            allOptions.forEach(option => {
+                const catId = parseInt(option.value);
+                
+                // Always show placeholder/empty option
+                if (!option.value) {
+                    categorySelect.appendChild(option);
+                    return;
+                }
+                
+                const catAccount = categoryMap[catId];
+                
+                // Show if global or matches selected account
+                if (catAccount === 'global' || catAccount == selectedAccount) {
+                    categorySelect.appendChild(option);
+                }
+            });
+            
+            // If currently selected value is now hidden, reset to empty
+            if (!Array.from(categorySelect.options).some(opt => opt.value === categorySelect.value)) {
+                categorySelect.value = '';
+            }
+        }
+
+        if (accountSelect && categorySelect) {
+            accountSelect.addEventListener('change', filterCategories);
+            // Initial filter
+            filterCategories();
+        }
+    });
+</script>
+{% endblock %}
