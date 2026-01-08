@@ -10,6 +10,15 @@
 
         <form method="post" class="form-group">
             {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div style="background-color: rgba(220, 38, 38, 0.1); border: 1px solid var(--danger); color: var(--danger); padding: 0.75rem; border-radius: 0.375rem; margin-bottom: 1rem;">
+                {% for error in form.non_field_errors %}
+                <p style="margin: 0; font-size: 0.875rem;">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
             {% for field in form %}
             <div class="form-group">
                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>

@@ -13,9 +13,49 @@ class MaintenanceState(models.Model):
         verbose_name_plural = "System Control"
 
     def save(self, *args, **kwargs):
+        # Import inside to avoid circular dependency
+        from apps.audit.utils import log_to_discord, LogEvents, LogColors
+        
+        # Check for changes if not new
+        is_new = self.pk is None
+        old_maintenance = None
+        old_read_only = None
+        
+        if not is_new:
+            try:
+                old = MaintenanceState.objects.get(pk=self.pk)
+                old_maintenance = old.is_maintenance
+                old_read_only = old.is_read_only
+            except MaintenanceState.DoesNotExist:
+                pass
+        
         super().save(*args, **kwargs)
         cache.set('maintenance_mode', self.is_maintenance, timeout=None)
         cache.set('read_only_mode', self.is_read_only, timeout=None)
+        
+        # Log Maintenance Change
+        if old_maintenance is not None and old_maintenance != self.is_maintenance:
+            status = "ENABLED" if self.is_maintenance else "DISABLED"
+            color = LogColors.WARNING if self.is_maintenance else LogColors.SUCCESS
+            log_to_discord(
+                event_type=LogEvents.MAINTENANCE,
+                title=f"Maintenance {status}",
+                user=self.updated_by or "System",
+                details={'Status': status},
+                color=color
+            )
+            
+        # Log Read-Only Change
+        if old_read_only is not None and old_read_only != self.is_read_only:
+            status = "ENABLED" if self.is_read_only else "DISABLED"
+            color = LogColors.WARNING if self.is_read_only else LogColors.SUCCESS
+            log_to_discord(
+                event_type=LogEvents.MAINTENANCE,
+                title=f"Read-Only Mode {status}",
+                user=self.updated_by or "System",
+                details={'Status': status},
+                color=color
+            )
 
     @classmethod
     def is_active(cls):

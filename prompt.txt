@@ -1,0 +1,61 @@
+
+
+> You are a backend developer implementing a **Discord-based logging system** using a **Discord Bot**.
+>
+> The system must send **real-time log messages** to a private Discord channel for monitoring important application events.
+>
+> ---
+>
+> ### Requirements
+>
+> * Use a Discord Bot (not webhook)
+> * Logs sent via bot messages
+> * Channel restricted to admins only
+> * Logs must be structured and readable
+>
+> ---
+>
+> ### Events to Log
+>
+> * User login, logout, registration
+> * Failed login attempts
+> * Account creation and sharing
+> * Transaction create/update/delete
+> * Statement generation and downloads
+> * Maintenance mode toggles
+> * Admin actions
+> * Security warnings
+>
+> ---
+>
+> ### Log Message Format
+>
+> * Emoji indicating category
+> * Clear title
+> * Key-value details
+> * Timestamp (UTC)
+>
+> ---
+>
+> ### Technical Rules
+>
+> * Logging must be non-blocking
+> * Bot failures must not affect application
+> * Rate-limit log messages
+> * Sensitive data must be masked
+>
+> ---
+>
+> ### Security
+>
+> * Bot token stored securely
+> * Only specific channel allowed
+> * Prevent spam and abuse
+>
+> ---
+>
+> ### Outcome
+>
+> A reliable, real-time Discord logging system that provides operational visibility, security monitoring, and audit tracking without impacting performance.
+
+

@@ -5,6 +5,7 @@ from django.utils import timezone
 from .models import Transaction
 from apps.accounts.models import Account
 from apps.notifications.models import Notification
+from apps.audit.utils import log_to_discord, LogEvents, LogColors
 from decimal import Decimal
 
 def update_account_balance_delta(account, transaction, reverse=False):
@@ -102,3 +103,58 @@ def check_budget_limit(sender, instance, created, **kwargs):
             type='BUDGET_EXCEEDED',
             message=message
         )
+
+@receiver(post_save, sender=Transaction)
+def log_transaction_save(sender, instance, created, **kwargs):
+    """
+    Log transaction creation and updates to Discord.
+    """
+    event_type = LogEvents.TRANSACTION_CREATED if created else LogEvents.TRANSACTION_UPDATED
+    title = f"Transaction {'Created' if created else 'Updated'}"
+    color = LogColors.SUCCESS if created else LogColors.WARNING
+    
+    # Try to determine who did it. 
+    # If created, created_by usually has it. If updated, last_modified_by.
+    # Fallback to instance.user (owner) if modifier is missing, though typically modifier is better if available.
+    actor = instance.created_by if created else instance.last_modified_by
+    if not actor:
+        actor = instance.user # Fallback
+        
+    details = {
+        'Title': instance.title,
+        'Amount': f"{instance.amount} {instance.account.currency if hasattr(instance.account, 'currency') else ''}",
+        'Type': instance.type,
+        'Account': instance.account.name if instance.account else 'N/A',
+        'Category': instance.category.name if instance.category else 'Uncategorized'
+    }
+    
+    log_to_discord(
+        event_type=event_type,
+        title=title,
+        user=actor,
+        details=details,
+        color=color
+    )
+
+@receiver(post_delete, sender=Transaction)
+def log_transaction_delete(sender, instance, **kwargs):
+    """
+    Log transaction deletion to Discord.
+    """
+    # For delete, we might not know who did it unless we track it in the view.
+    # But usually we can just properly blame the user for now or 'System'.
+    
+    details = {
+        'Title': instance.title,
+        'Amount': str(instance.amount),
+        'Type': instance.type,
+        'Account': instance.account.name if instance.account else 'N/A'
+    }
+    
+    log_to_discord(
+        event_type=LogEvents.TRANSACTION_DELETED,
+        title="Transaction Deleted",
+        user=instance.user, # Best guess context
+        details=details,
+        color=LogColors.ERROR
+    )

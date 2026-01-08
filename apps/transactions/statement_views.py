@@ -7,6 +7,7 @@ from django.utils.text import slugify
 from .models import Transaction
 from apps.accounts.models import Account
 from .utils import generate_statement_context
+from apps.audit.utils import log_to_discord, LogEvents, LogColors
 
 from xhtml2pdf import pisa
 from io import BytesIO
@@ -23,6 +24,7 @@ class StatementPDFView(LoginRequiredMixin, View):
             has_access = True
             
         if not has_access:
+            # Optional: Log security warning for unauthorized access attempt?
             return HttpResponseForbidden("You do not have permission to view this statement.")
 
         # Get Filter Parameters
@@ -53,5 +55,18 @@ class StatementPDFView(LoginRequiredMixin, View):
         # If there was an error, return it
         if pisa_status.err:
             return HttpResponse('We had some errors <pre>' + html_string + '</pre>')
+            
+        # Log Success
+        log_to_discord(
+            event_type=LogEvents.STATEMENT_GENERATED,
+            title="Statement Downloaded",
+            user=request.user,
+            details={
+                'Account': account.name,
+                'Start Date': start_date,
+                'End Date': end_date
+            },
+            color=LogColors.INFO
+        )
             
         return response
