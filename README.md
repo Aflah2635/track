@@ -13,13 +13,6 @@ A robust, production-ready web application for managing personal and shared fina
 - **Statements**: Generate and download PDF account statements with custom date ranges.
 - **Notifications**: Real-time system alerts for budget limits and account activities.
 
-### 🤖 AI Help Assistant
-
-- **In-App Chatbot**: Integrated help assistant powered by Google Gemini.
-- **Context-Aware**: Understands app features and workflows.
-- **Safe & Secure**: Assistive only (read-only), with strict privacy guardrails.
-- **Capabilities**: Explains features, guides users ("How do I..."), and clarifies terminology.
-
 ### 🛠 System & Admin
 
 - **Role-Based Access Control (RBAC)**: Secure permission handling for resources.
