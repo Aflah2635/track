@@ -14,7 +14,7 @@ def update_account_balance_delta(account, transaction, reverse=False):
     if not account:
         return
         
-    amount = transaction.amount
+    amount = Decimal(str(transaction.amount))
     
     # Check transaction type to determine sign
     # DEBIT/LEND reduces balance (Spending/Lending out)
@@ -51,6 +51,9 @@ def update_balance_save(sender, instance, created, **kwargs):
     Apply the new transaction effect.
     """
     if instance.account:
+        # Refresh the account instance to ensure we have the latest balance
+        # (including any reversal that happened in pre_save)
+        instance.account.refresh_from_db()
         update_account_balance_delta(instance.account, instance, reverse=False)
 
 @receiver(post_delete, sender=Transaction)
