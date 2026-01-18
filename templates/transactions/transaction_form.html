@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; padding-top: 2rem;">
+    <div class="card">
+        <div class="mb-4">
+            <h2>New Transaction</h2>
+            <p class="text-muted">Record a credit, debit, loan, or debt</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field.as_widget }}
+                {% if field.help_text %}
+                <small class="text-muted">{{ field.help_text }}</small>
+                {% endif %}
+                {% if field.errors %}
+                <div style="color: var(--danger); font-size: 0.875rem;">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="actions mt-4" style="justify-content: flex-end;">
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Transaction</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const accountSelect = document.getElementById('id_account');
+        const categorySelect = document.getElementById('id_category');
+        const categoryMap = JSON.parse('{{ category_account_map|safe }}');
+        
+        // Cache original options
+        const allOptions = Array.from(categorySelect.options);
+
+        function filterCategories() {
+            const selectedAccount = accountSelect.value;
+            
+            // Clear current options
+            categorySelect.innerHTML = '';
+            
+            allOptions.forEach(option => {
+                const catId = parseInt(option.value);
+                
+                // Always show placeholder/empty option
+                if (!option.value) {
+                    categorySelect.appendChild(option);
+                    return;
+                }
+                
+                const catAccount = categoryMap[catId];
+                
+                // Show if global or matches selected account
+                if (catAccount === 'global' || catAccount == selectedAccount) {
+                    categorySelect.appendChild(option);
+                }
+            });
+            
+            // If currently selected value is now hidden, reset to empty
+            if (!Array.from(categorySelect.options).some(opt => opt.value === categorySelect.value)) {
+                categorySelect.value = '';
+            }
+        }
+
+        if (accountSelect && categorySelect) {
+            accountSelect.addEventListener('change', filterCategories);
+            // Initial filter
+            filterCategories();
+        }
+    });
+</script>
+{% endblock %}

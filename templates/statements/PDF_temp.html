@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Account Statement</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+        }
+        
+        body {
+            font-family: 'Helvetica', sans-serif;
+            font-size: 10pt;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #333;
+            padding-bottom: 1rem;
+        }
+
+        .title {
+            font-size: 24pt;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .meta-info {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .meta-info td {
+            vertical-align: top;
+        }
+
+        .client-info {
+            font-weight: bold;
+            font-size: 12pt;
+        }
+
+        .summary-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 2rem;
+        }
+
+        .summary-table {
+            width: 100%;
+        }
+
+        .summary-table td {
+            padding: 5px;
+        }
+
+        .amount-positive { color: #27ae60; font-weight: bold; }
+        .amount-negative { color: #c0392b; font-weight: bold; }
+        .amount-neutral { color: #2980b9; font-weight: bold; }
+
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .transactions-table th {
+            background-color: #2c3e50;
+            color: white;
+            padding: 8px;
+            text-align: left;
+            font-size: 9pt;
+        }
+
+        .transactions-table td {
+            border-bottom: 1px solid #eee;
+            padding: 8px;
+            font-size: 9pt;
+        }
+
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+
+        .badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 8pt;
+            color: white;
+        }
+        .type-credit { background-color: #27ae60; }
+        .type-debit { background-color: #c0392b; }
+        .type-lend { background-color: #f39c12; }
+        .type-borrow { background-color: #8e44ad; }
+
+        .footer {
+            margin-top: 3rem;
+            text-align: center;
+            font-size: 8pt;
+            color: #999;
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">Account Statement</h1>
+        <table class="meta-info">
+            <tr>
+                <td width="60%">
+                    <div class="client-info">Account: {{ account.name }}</div>
+                    {% if account.is_shared %}
+                    <div>Shared Account (Owner: {{ account.user.username }})</div>
+                    {% endif %}
+                </td>
+                <td width="40%" class="text-right">
+                    <div><strong>Statement Period:</strong></div>
+                    <div>{{ start_date|date:"M d, Y" }} - {{ end_date|date:"M d, Y" }}</div>
+                    <div style="margin-top: 5px; font-size: 8pt; color: #666;">Generated: {{ generated_at|date:"M d, Y H:i" }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="summary-box">
+        <table class="summary-table">
+            <tr>
+                <td width="25%"><strong>Opening Balance:</strong></td>
+                <td width="25%">{{ opening_balance }}</td>
+                <td width="25%"><strong>Total Credit:</strong></td>
+                <td width="25%" class="amount-positive">+{{ total_credit }}</td>
+            </tr>
+            <tr>
+                <td><strong>Closing Balance:</strong></td>
+                <td><strong>{{ closing_balance }}</strong></td>
+                <td><strong>Total Debit:</strong></td>
+                <td class="amount-negative">-{{ total_debit }}</td>
+            </tr>
+            <tr>
+                <td colspan="2"></td>
+                <td><strong>Net Change:</strong></td>
+                <td class="amount-neutral">
+                    {% if total_credit > total_debit %}+{% endif %}
+                    {{ closing_balance|add:opening_balance|default:"0" }} <!-- Quick math hack or just use precalc -->
+                    <!-- Actually the nice comparison is hard in template math. Let's just trust context -->
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <h3>Transaction History</h3>
+    <table class="transactions-table">
+        <thead>
+            <tr>
+                <th width="15%">Date</th>
+                <th width="35%">Title</th>
+                <th width="15%">Category</th>
+                <th width="10%">Type</th>
+                <th width="15%" class="text-right">Amount</th>
+                {% if account.is_shared %}
+                <th width="10%">User</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in transactions %}
+            <tr>
+                <td>{{ t.timestamp|date:"M d, Y" }}</td>
+                <td>
+                    <strong>{{ t.title }}</strong>
+                    {% if t.counterparty %}
+                    <br><span style="color: #666; font-size: 8pt;">{{ t.counterparty }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ t.category.name|default:"Uncategorized" }}</td>
+                <td>
+                    <span class="badge type-{{ t.type|lower }}">
+                        {{ t.get_type_display }}
+                    </span>
+                </td>
+                <td class="text-right">
+                    {% if t.type == 'DEBIT' or t.type == 'LEND' %}
+                        <span class="amount-negative">-{{ t.amount }}</span>
+                    {% else %}
+                        <span class="amount-positive">+{{ t.amount }}</span>
+                    {% endif %}
+                </td>
+                {% if account.is_shared %}
+                <td>{{ t.created_by.username }}</td>
+                {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center" style="padding: 20px; color: #666;">
+                    No transactions found for this period.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>This is a computer-generated document. No signature is required.</p>
+        <p>Finance Tracker App</p>
+    </div>
+</body>
+</html>

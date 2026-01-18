@@ -1,0 +1,9 @@
+Django>=5.0,<6.1
+python-dotenv
+whitenoise
+gunicorn
+discord.py
+django-axes
+pip-audit
+django-ratelimit
+xhtml2pdf

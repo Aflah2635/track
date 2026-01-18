@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="account-management" style="max-width: 900px; margin: 0 auto; padding: 2rem;">
+    <div class="header flex-between mb-4">
+        <h1>Manage Accounts</h1>
+        <a href="{% url 'create_account' %}" class="btn btn-primary">+ Create New Account</a>
+    </div>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Owned Accounts -->
+    <div class="card mb-4">
+        <h3>My Accounts</h3>
+        <div class="table-container">
+            {% if owned_accounts %}
+            <table class="transaction-table">
+                <thead>
+                    <tr>
+                        <th>Account Name</th>
+                        <th>Balance</th>
+                        <th class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for account in owned_accounts %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'dashboard' %}?account={{ account.id }}"
+                                style="text-decoration: none; font-weight: bold; color: var(--primary-900);">
+                                {{ account.name }}
+                            </a>
+                            <br>
+                            <small class="text-muted">{{ account.account_number|default:"" }}</small>
+                        </td>
+                        <td>₹{{ account.balance }}</td>
+                        <td class="text-right">
+                            <!-- <a href="{% url 'dashboard' %}?account={{ account.id }}"
+                                class="btn btn-sm btn-outline-secondary">Select</a> -->
+                            <a href="{% url 'update_account' account.id %}"
+                                class="btn btn-sm btn-outline-primary">Rename</a>
+                            <a href="{% url 'share_account' account.id %}"
+                                class="btn btn-sm btn-outline-primary">Share</a>
+                            <a href="{% url 'delete_account' account.id %}" class="btn btn-sm btn-danger">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted text-center p-4">You haven't created any accounts yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Shared Accounts -->
+    {% if shared_accounts %}
+    <div class="card">
+        <h3>Shared with Me</h3>
+        <div class="table-container">
+            <table class="transaction-table">
+                <thead>
+                    <tr>
+                        <th>Account Name</th>
+                        <th>Owner</th>
+                        <th>Balance</th>
+                        <th class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for account in shared_accounts %}
+                    <tr>
+                        <td>
+                            <strong style="color: var(--primary-900);">{{ account.name }}</strong>
+                        </td>
+                        <td>{{ account.user.username }}</td>
+                        <td>₹{{ account.balance }}</td>
+                        <td class="text-right">
+                            <a href="{% url 'dashboard' %}?account={{ account.id }}"
+                                class="btn btn-sm btn-outline-secondary">Select</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{% url 'dashboard' %}" class="text-muted">&larr; Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

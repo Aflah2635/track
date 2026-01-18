@@ -1,0 +1,221 @@
+Got you ✅ Here are **two separate, copy-paste prompts** exactly as you asked:
+
+---
+
+# ✅ 1) Prompt: Completely Remove Statement System
+
+You are a **senior Django developer** working on a finance/expense tracking web application.
+
+## 🎯 Goal
+
+Completely remove the **PDF Statement / Statement Download system** from the project **without breaking any other features**.
+
+---
+
+## ✅ Tasks to Perform
+
+### 1️⃣ Remove All Statement Features
+
+* Remove statement download button from UI
+* Remove statement filters (date range, transaction type filters)
+* Remove all PDF generation logic
+
+---
+
+### 2️⃣ Remove URLs + Views
+
+* Delete statement-related URL patterns:
+
+  * `/statement/<id>/`
+  * `/download-statement/`
+* Remove statement views/classes/functions:
+
+  * `StatementPDFView`
+  * any `render_to_pdf()` usage
+  * any PDF generator code (ReportLab / xhtml2pdf)
+
+---
+
+### 3️⃣ Remove Templates
+
+Delete statement-related templates:
+
+* `PDF_temp.html` / `PDF_temp`
+* statement preview templates (if any)
+
+---
+
+### 4️⃣ Remove Unused Dependencies
+
+* Remove and uninstall unused packages:
+
+  * `xhtml2pdf`
+  * `reportlab`
+  * others related to PDF only
+
+Update:
+
+* `requirements.txt`
+
+---
+
+### 5️⃣ Remove Static Assets
+
+Remove unused CSS/JS/images related to statements:
+
+* statement page styling
+* statement icons
+
+---
+
+### 6️⃣ Verify System Stability
+
+After removal, ensure:
+
+* dashboard works
+* transactions work
+* accounts work
+* shared accounts work
+* no import errors
+* no template errors
+* no missing URLs errors
+
+---
+
+## ✅ Expected Outcome
+
+* Statement feature fully removed from backend + frontend
+* Project runs clean without statement errors
+* No dead code remains
+
+---
+
+---
+
+# ✅ 2) Prompt: Re-Add Statement System (Full Working PDF)
+
+You are a **senior Django backend developer** implementing a full **Account Statement PDF system** for a finance/expense tracking web application.
+
+## 🎯 Goal
+
+Re-add and rebuild the **Statement Download System** from scratch so it generates a clean professional PDF and downloads correctly.
+
+---
+
+## ✅ System Requirements
+
+### 1️⃣ Statement Download Feature
+
+Add a feature that allows the user to download a PDF statement for an account with filters:
+
+✅ Filters:
+
+* Start date
+* End date
+* Transaction type:
+
+  * ALL / Credit / Debit / Lend / Borrow
+* Category filter (optional)
+* User filter (only for shared accounts)
+
+---
+
+### 2️⃣ PDF Template
+
+Create a template `PDF_temp.html` that produces a professional statement:
+
+Must include:
+
+* App name + logo (optional)
+* Title: “Account Statement”
+* Account name
+* Generated date/time
+* Statement period
+* Summary section:
+
+  * Total credit
+  * Total debit
+  * Total lent
+  * Total borrowed
+  * Closing balance
+* Transaction table:
+
+  * Date
+  * Title
+  * Category
+  * Type
+  * Amount
+  * Balance (optional)
+  * Added By (only for shared accounts)
+* Footer:
+
+  * page number
+  * disclaimer text
+
+---
+
+### 3️⃣ Correct Response Headers (Very Important)
+
+Fix PDF download issue permanently by returning the PDF with correct headers:
+
+✅ `Content-Type: application/pdf`
+✅ `Content-Disposition: attachment; filename="account_statement.pdf"`
+✅ `X-Content-Type-Options: nosniff`
+
+Browser must never show raw `%PDF-1.4` text.
+
+---
+
+### 4️⃣ Backend Logic
+
+Build a dedicated statement view:
+
+* Validates account permissions
+* Applies filters correctly
+* Computes totals correctly
+* Handles edge cases:
+
+  * empty result set
+  * large transaction list
+  * invalid filters
+
+---
+
+### 5️⃣ PDF Generator
+
+Use one stable method:
+
+Option A (recommended): `xhtml2pdf`
+Option B: `ReportLab`
+
+Make sure the output is binary bytes.
+
+---
+
+### 6️⃣ UI Integration
+
+Add a “Download PDF” button on dashboard/transactions page:
+
+* opens statement modal
+* filter form
+* download triggers statement URL
+* show loading indicator
+
+
+---
+
+### 7️⃣ Security Rules
+
+* Only users with access to the account can download statement
+* Shared accounts must show “Added By”
+* No user should access another user’s account statement
+
+---
+
+## ✅ Expected Outcome
+
+* Statement system is fully functional
+* Clean PDF layout
+* Works on PythonAnywhere
+* Download works correctly
+* Supports personal + shared accounts

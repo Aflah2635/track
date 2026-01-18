@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Expense Tracker{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+
+<body hx-boost="true">
+    <div class="{% if user.is_authenticated %}layout-dashboard{% else %}layout-public{% endif %}">
+        {% if user.is_authenticated %}
+        <aside class="sidebar">
+            <div class="brand">
+                <span>ExpenseTracker</span>
+            </div>
+            <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')"
+                aria-label="Toggle menu">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <ul class="nav-links">
+                <li><a href="{% url 'dashboard' %}{% if active_account %}?account={{ active_account.id }}{% endif %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a>
+                </li>
+                <li><a href="{% url 'manage_accounts' %}{% if active_account %}?account={{ active_account.id }}{% endif %}"
+                        class="nav-link {% if 'accounts' in request.path %}active{% endif %}">Manage Accounts</a></li>
+                <li><a href="{% url 'add_transaction' %}{% if active_account %}?account={{ active_account.id }}{% endif %}"
+                        class="nav-link {% if 'transaction' in request.path %}active{% endif %}">Transactions</a></li>
+                <li>
+                    <a href="{% url 'notifications:list' %}{% if active_account %}?account={{ active_account.id }}{% endif %}"
+                        class="nav-link {% if 'notifications' in request.path %}active{% endif %} d-flex align-items-center justify-content-between">
+                        <span>Notifications</span>
+                        {% if notification_count > 0 %}
+                        <span class="badge bg-danger rounded-pill ms-2"
+                            style="display: inline-flex; align-items: center; justify-content: center; min-width: 1.5em; height: 1.5em; font-size: 0.75rem;">
+                            {{ notification_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li><a href="{% url 'category_list' %}{% if active_account %}?account={{ active_account.id }}{% endif %}"
+                        class="nav-link {% if 'categories' in request.path %}active{% endif %}">Categories</a></li>
+                <!-- Profile Link -->
+                <li><a href="{% url 'profile' %}"
+                    class="nav-link {% if 'profile' in request.path %}active{% endif %}">Profile</a></li>
+                <li style="margin-top: auto; width: 100%;">
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="nav-link text-left"
+                            style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; font-family: inherit; font-size: inherit;">
+                            Logout
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </aside>
+        {% else %}
+        <!-- Simple Nav for Public Pages -->
+        <nav class="navbar">
+            <div class="brand">
+                <a href="{% url 'home' %}">ExpenseTracker</a>
+            </div>
+            <div class="nav-links" style="flex-direction: row; width: auto; align-items: center;">
+                <a href="{% url 'login' %}" class="nav-link">Login</a>
+                <a href="{% url 'signup' %}" class="btn btn-secondary"
+                    style="padding: 0.25rem 0.75rem; white-space: nowrap;">Sign Up</a>
+            </div>
+        </nav>
+        {% endif %}
+
+        <main class="main-content">
+            <div class="container">
+                {% if messages %}
+                <div class="messages mb-4">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}"
+                        style="padding: 1rem; margin-bottom: 1rem; border-radius: 0.5rem; background-color: var(--bg-surface); border: 1px solid var(--border);">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% block content %}
+                {% endblock %}
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

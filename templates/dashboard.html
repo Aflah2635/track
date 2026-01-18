@@ -1,0 +1,682 @@
+{% extends 'base.html' %} {% block content %}
+<div
+  class="dashboard-header mb-4 flex-between"
+  style="align-items: center; flex-wrap: wrap; gap: 1rem"
+>
+  <div>
+    <h1 style="margin-bottom: 0.5rem">Dashboard</h1>
+
+    <!-- Account Switcher -->
+    <form
+      method="get"
+      class="account-switcher"
+      style="display: flex; align-items: center; gap: 0.5rem"
+    >
+      <label for="account-select" class="text-muted">Account:</label>
+      <select
+        name="account"
+        id="account-select"
+        onchange="this.form.submit()"
+        style="
+          padding: 0.5rem;
+          border-radius: var(--radius-md);
+          border: 1px solid var(--border);
+          font-size: 1rem;
+          min-width: 200px;
+        "
+      >
+        {% for acc in accounts %}
+        <option
+          value="{{ acc.id }}"
+          {%
+          if
+          active_account
+          and
+          acc.id=""
+          ="active_account.id"
+          %}selected{%
+          endif
+          %}
+        >
+          {{ acc.name }} {% if acc.user != user %}(Shared){% endif %}
+        </option>
+        {% endfor %}
+      </select>
+      {% if can_share and active_account %}
+      <!-- <a href="{% url 'share_account' active_account.id %}" class="btn btn-sm btn-outline-primary"
+                style="margin-left: 0.5rem;">
+                Share
+            </a> -->
+      {% endif %}
+      <!-- <a href="{% url 'manage_accounts' %}" class="btn btn-sm btn-outline-secondary" style="margin-left: 0.5rem;">
+                Manage Accounts
+            </a> -->
+    </form>
+  </div>
+
+  <div class="actions" style="display: flex; gap: 0.5rem">
+    {% if active_account %}
+    <button onclick="openStatementModal()" class="btn btn-outline-secondary">
+      Download PDF
+    </button>
+    {% endif %} {% if can_add_transaction %}
+    <a href="{% url 'add_transaction' %}" class="btn btn-primary"
+      >New Transaction</a
+    >
+    {% endif %}
+  </div>
+</div>
+
+<!-- Statement Download Modal -->
+<div
+  id="statementModal"
+  class="modal"
+  style="
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+  "
+>
+  <div
+    class="modal-content"
+    style="
+      background-color: #ffffff;
+      margin: 10% auto;
+      padding: 2rem;
+      border: 1px solid var(--border);
+      width: 90%;
+      max-width: 500px;
+      border-radius: var(--radius-lg);
+    "
+  >
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      "
+    >
+      <h2 style="margin: 0">Download Statement</h2>
+      <span
+        onclick="closeStatementModal()"
+        style="cursor: pointer; font-size: 1.5rem; font-weight: bold"
+        >&times;</span
+      >
+    </div>
+
+    <form
+      action="{% if active_account %}{% url 'download_statement' active_account.id %}{% endif %}"
+      method="get"
+      id="statementForm"
+      target="_self"
+      hx-boost="false"
+    >
+      <div style="margin-bottom: 1rem">
+        <label style="display: block; margin-bottom: 0.5rem">Start Date</label>
+        <input
+          type="date"
+          name="start_date"
+          style="
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+          "
+        />
+      </div>
+
+      <div style="margin-bottom: 1rem">
+        <label style="display: block; margin-bottom: 0.5rem">End Date</label>
+        <input
+          type="date"
+          name="end_date"
+          style="
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+          "
+        />
+      </div>
+
+      <div style="margin-bottom: 1rem">
+        <label style="display: block; margin-bottom: 0.5rem">Type</label>
+        <select
+          name="type"
+          style="
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+          "
+        >
+          <option value="ALL">All Transactions</option>
+          <option value="CREDIT">Credit Only</option>
+          <option value="DEBIT">Debit Only</option>
+          <option value="LEND">Lent Only</option>
+          <option value="BORROW">Borrowed Only</option>
+        </select>
+      </div>
+
+      {% if categories %}
+      <div style="margin-bottom: 1rem">
+        <label style="display: block; margin-bottom: 0.5rem">Category</label>
+        <select
+          name="category"
+          style="
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+          "
+        >
+          <option value="">All Categories</option>
+          {% for cat in categories %}
+          <option value="{{ cat.id }}">{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %} {% if active_account.is_shared %}
+      <div style="margin-bottom: 1rem">
+        <label style="display: block; margin-bottom: 0.5rem">Added By</label>
+        <select
+          name="user"
+          style="
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+          "
+        >
+          <option value="">All Users</option>
+          <option value="{{ active_account.user.id }}">
+            {{ active_account.user.username }} (Owner)
+          </option>
+          {% for access in account_users %}
+          <option value="{{ access.user.id }}">
+            {{ access.user.username }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+
+      <div style="text-align: right; margin-top: 2rem">
+        <button
+          type="button"
+          onclick="closeStatementModal()"
+          class="btn btn-outline-secondary"
+          style="margin-right: 0.5rem"
+        >
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary">Download PDF</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openStatementModal() {
+      const modal = document.getElementById('statementModal');
+      const form = document.getElementById('statementForm');
+      
+      // Pre-fill dates (Start of month to Today)
+      const today = new Date();
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+      document.querySelector('input[name="end_date"]').valueAsDate = today;
+      document.querySelector('input[name="start_date"]').valueAsDate = startOfMonth;
+
+      modal.style.display = 'block';
+  }
+
+  function closeStatementModal() {
+      document.getElementById('statementModal').style.display = 'none';
+  }
+
+  // Close on click outside
+  window.onclick = function(event) {
+      const modal = document.getElementById('statementModal');
+      if (event.target == modal) {
+          closeStatementModal();
+      }
+  }
+</script>
+
+{% if active_account %}
+<div
+  class="summary-grid"
+  style="
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  "
+>
+  <!-- Balance Card -->
+  <div class="card balance-card" style="grid-column: 1 / -1">
+    <h3>{{ active_account.name }} Balance</h3>
+    <p class="balance">₹{{ total_balance }}</p>
+    <!-- <small class="text-muted" style="color: rgba(255,255,255,0.8);">{{ active_account.account_number }}</small> -->
+  </div>
+
+  <!-- Credit -->
+  <div class="card" style="border-left: 4px solid var(--success)">
+    <h3
+      style="font-size: 1rem; color: var(--text-muted); margin-bottom: 0.5rem"
+    >
+      Total Credit
+    </h3>
+    <p style="font-size: 1.5rem; font-weight: 700; color: var(--success)">
+      ₹{{ total_credit|default:"0.00" }}
+    </p>
+  </div>
+
+  <!-- Debit -->
+  <div class="card" style="border-left: 4px solid var(--danger)">
+    <h3
+      style="font-size: 1rem; color: var(--text-muted); margin-bottom: 0.5rem"
+    >
+      Total Debit
+    </h3>
+    <p style="font-size: 1.5rem; font-weight: 700; color: var(--danger)">
+      ₹{{ total_debit|default:"0.00" }}
+    </p>
+  </div>
+
+  <!-- Lent -->
+  <div class="card" style="border-left: 4px solid var(--warning)">
+    <h3
+      style="font-size: 1rem; color: var(--text-muted); margin-bottom: 0.5rem"
+    >
+      Total Lent
+    </h3>
+    <p style="font-size: 1.5rem; font-weight: 700; color: var(--warning)">
+      ₹{{ total_lent|default:"0.00" }}
+    </p>
+  </div>
+
+  <!-- Borrowed -->
+  <div class="card" style="border-left: 4px solid var(--brand-500)">
+    <h3
+      style="font-size: 1rem; color: var(--text-muted); margin-bottom: 0.5rem"
+    >
+      Total Borrowed
+    </h3>
+    <p style="font-size: 1.5rem; font-weight: 700; color: var(--brand-500)">
+      ₹{{ total_borrowed|default:"0.00" }}
+    </p>
+  </div>
+</div>
+
+<div class="content-grid" style="margin-top: 2rem">
+  <!-- Recent Transactions -->
+  <div class="card" style="padding: 0; overflow: hidden">
+    <div style="padding: 1.5rem; border-bottom: 1px solid var(--border)">
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 1rem;
+        "
+      >
+        <h3 style="margin: 0">
+          Recent Transactions - {{ active_account.name }}
+        </h3>
+      </div>
+
+      <!-- Filters -->
+      <form
+        method="get"
+        style="
+          margin-top: 1.5rem;
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          align-items: end;
+        "
+      >
+        <input type="hidden" name="account" value="{{ active_account.id }}" />
+
+        <div style="flex: 1; min-width: 200px">
+          <label
+            style="
+              display: block;
+              font-size: 0.875rem;
+              margin-bottom: 0.35rem;
+              color: var(--text-muted);
+            "
+            >Search</label
+          >
+          <input
+            type="text"
+            name="q"
+            value="{{ filter_q }}"
+            placeholder="Search by title..."
+            style="
+              width: 100%;
+              padding: 0.5rem;
+              border: 1px solid var(--border);
+              border-radius: var(--radius-md);
+            "
+          />
+        </div>
+
+        <div style="width: 150px; flex-grow: 1">
+          <label
+            style="
+              display: block;
+              font-size: 0.875rem;
+              margin-bottom: 0.35rem;
+              color: var(--text-muted);
+            "
+            >Category</label
+          >
+          <select
+            name="category"
+            style="
+              width: 100%;
+              padding: 0.5rem;
+              border: 1px solid var(--border);
+              border-radius: var(--radius-md);
+            "
+          >
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+            <option
+              value="{{ cat.id }}"
+              {%
+              if
+              filter_category=""
+              ="cat.id"
+              %}selected{%
+              endif
+              %}
+            >
+              {{ cat.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        {% if active_account.is_shared %}
+        <div style="width: 150px; flex-grow: 1">
+          <label
+            style="
+              display: block;
+              font-size: 0.875rem;
+              margin-bottom: 0.35rem;
+              color: var(--text-muted);
+            "
+            >Added By</label
+          >
+          <select
+            name="user"
+            style="
+              width: 100%;
+              padding: 0.5rem;
+              border: 1px solid var(--border);
+              border-radius: var(--radius-md);
+            "
+          >
+            <option value="">All Users</option>
+            <!-- Owner -->
+            <option
+              value="{{ active_account.user.id }}"
+              {%
+              if
+              filter_user=""
+              ="active_account.user.id"
+              %}selected{%
+              endif
+              %}
+            >
+              {{ active_account.user.username }} (Owner)
+            </option>
+            <!-- Shared Users -->
+            {% for access in account_users %}
+            <option
+              value="{{ access.user.id }}"
+              {%
+              if
+              filter_user=""
+              ="access.user.id"
+              %}selected{%
+              endif
+              %}
+            >
+              {{ access.user.username }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+
+        <div style="display: flex; gap: 0.5rem">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            style="padding: 0.5rem 1rem"
+          >
+            Filter
+          </button>
+          {% if filter_q or filter_category or filter_user %}
+          <a
+            href="{% url 'dashboard' %}?account={{ active_account.id }}"
+            class="btn btn-outline-secondary"
+            style="padding: 0.5rem 1rem"
+            >Clear</a
+          >
+          {% endif %}
+        </div>
+      </form>
+    </div>
+    <div class="table-container">
+      {% if transactions %}
+      <!-- Desktop View: Table -->
+      <div class="desktop-only">
+        <table class="transaction-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Title</th>
+              <th>Type</th>
+              {% if active_account.is_shared %}
+              <th>Added By</th>
+              {% endif %}
+              <th>Counterparty</th>
+
+              <th class="text-right">Amount</th>
+              {% if permission_level == 'FULL' %}
+              <th></th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in transactions %}
+            <tr>
+              <td>{{ t.timestamp|date:"M d, Y" }}</td>
+              <td>
+                <strong style="color: var(--primary-900)">{{ t.title }}</strong>
+              </td>
+              <td>
+                <span class="badge type-{{ t.type|lower }}"
+                  >{{ t.get_type_display }}</span
+                >
+              </td>
+              {% if active_account.is_shared %}
+              <td>{{ t.created_by.username|default:"-" }}</td>
+              {% endif %}
+              <td>{{ t.counterparty|default:"-" }}</td>
+
+              <td class="text-right" style="font-weight: 600">
+                {% if t.type == 'DEBIT' or t.type == 'LEND' %} -{{ t.amount }}
+                {% else %} +{{ t.amount }} {% endif %}
+              </td>
+              {% if permission_level == 'FULL' %}
+              <td class="text-right">
+                <a
+                  href="{% url 'edit_transaction' t.id %}"
+                  class="btn btn-sm btn-outline-secondary"
+                  style="padding: 0.25rem 0.5rem; font-size: 0.75rem"
+                  >Edit</a
+                >
+                <a
+                  href="{% url 'delete_transaction' t.id %}"
+                  class="btn btn-sm btn-outline-danger"
+                  style="
+                    padding: 0.25rem 0.5rem;
+                    font-size: 0.75rem;
+                    color: #dc3545;
+                    border-color: #dc3545;
+                  "
+                  >Delete</a
+                >
+              </td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile View: Cards -->
+      <div class="mobile-only" style="padding: 1rem">
+        <div class="mobile-transaction-list">
+          {% for t in transactions %}
+          <div class="mobile-transaction-card">
+            <div class="mobile-card-header">
+              <div>
+                <span class="mobile-card-title">{{ t.title }}</span>
+                <span class="mobile-card-date"
+                  >{{ t.timestamp|date:"M d, Y" }}</span
+                >
+              </div>
+              <span class="badge type-{{ t.type|lower }}"
+                >{{ t.get_type_display }}</span
+              >
+            </div>
+
+            {% if active_account.is_shared %}
+            <div
+              style="
+                font-size: 0.8rem;
+                color: var(--text-muted);
+                margin-bottom: 0.25rem;
+              "
+            >
+              Added by: <strong>{{ t.created_by.username|default:"-" }}</strong>
+            </div>
+            {% endif %}
+
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
+            >
+              <span style="color: var(--text-muted); font-size: 0.9rem">
+                {% if t.counterparty %}
+                <span style="margin-right: 0.5rem"
+                  >👤 {{ t.counterparty }}</span
+                >
+                {% endif %}
+              </span>
+              <span
+                class="mobile-card-amount"
+                style="color: {% if t.type == 'DEBIT' or t.type == 'LEND' %}var(--danger){% else %}var(--success){% endif %};"
+              >
+                {% if t.type == 'DEBIT' or t.type == 'LEND' %} -{{ t.amount }}
+                {% else %} +{{ t.amount }} {% endif %}
+              </span>
+            </div>
+
+            {% if permission_level == 'FULL' %}
+            <div class="mobile-card-footer">
+              <a
+                href="{% url 'edit_transaction' t.id %}"
+                style="color: var(--text-muted); font-size: 0.9rem"
+                >Edit</a
+              >
+              <a
+                href="{% url 'delete_transaction' t.id %}"
+                style="color: var(--danger); font-size: 0.9rem"
+                >Delete</a
+              >
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% if transactions.has_other_pages %}
+      <div
+        class="pagination"
+        style="
+          display: flex;
+          justify-content: center;
+          gap: 0.5rem;
+          margin: 1.5rem 0;
+        "
+      >
+        {% if transactions.has_previous %}
+        <a
+          href="?account={{ active_account.id }}&page={{ transactions.previous_page_number }}{% if filter_q %}&q={{ filter_q }}{% endif %}{% if filter_category %}&category={{ filter_category }}{% endif %}{% if filter_user %}&user={{ filter_user }}{% endif %}"
+          class="btn btn-sm btn-outline-secondary"
+          style="font-size: 0.875rem"
+          >&laquo; Previous</a
+        >
+        {% endif %}
+
+        <span
+          class="current-page"
+          style="
+            padding: 0.25rem 0.5rem;
+            align-self: center;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+          "
+        >
+          Page {{ transactions.number }} of {{ transactions.paginator.num_pages }}
+        </span>
+
+        {% if transactions.has_next %}
+        <a
+          href="?account={{ active_account.id }}&page={{ transactions.next_page_number }}{% if filter_q %}&q={{ filter_q }}{% endif %}{% if filter_category %}&category={{ filter_category }}{% endif %}{% if filter_user %}&user={{ filter_user }}{% endif %}"
+          class="btn btn-sm btn-outline-secondary"
+          style="font-size: 0.875rem"
+          >Next &raquo;</a
+        >
+        {% endif %}
+      </div>
+      {% endif %} {% else %}
+      <div style="padding: 2rem; text-align: center; color: var(--text-muted)">
+        <p>No recent transactions in this account.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="empty-state" style="text-align: center; padding: 4rem">
+  <h2>No Accounts Found</h2>
+  <p class="text-muted">Create your first account to get started.</p>
+  <a
+    href="{% url 'create_account' %}"
+    class="btn btn-primary"
+    style="margin-top: 1rem"
+    >Create Account</a
+  >
+</div>
+{% endif %} {% endblock %}
