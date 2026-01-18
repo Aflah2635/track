@@ -1,0 +1,266 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Account Statement</title>
+    <style>
+        @page {
+            size: a4 portrait;
+            margin: 2cm;
+
+            @frame footer_frame {
+                -pdf-frame-content: footerContent;
+                bottom: 1cm;
+                margin-left: 1cm;
+                margin-right: 1cm;
+                height: 1cm;
+            }
+        }
+
+        body {
+            font-family: Helvetica, sans-serif;
+            color: #333;
+            font-size: 11pt;
+            line-height: 1.5;
+        }
+
+        /* Header Layout using Tables because xhtml2pdf doesn't support Flexbox */
+        .header-table {
+            width: 100%;
+            border-bottom: 2px solid #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 24pt;
+            color: #2c3e50;
+            text-transform: uppercase;
+        }
+
+        .brand p {
+            margin: 5px 0 0;
+            color: #7f8c8d;
+            font-size: 10pt;
+        }
+
+        .statement-details td {
+            text-align: right;
+            padding: 2px 0 2px 10px;
+            font-size: 9pt;
+        }
+
+        /* Summary Section */
+        .summary-wrapper {
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .account-info h2 {
+            font-size: 14pt;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10pt;
+        }
+
+        .summary-table th,
+        .summary-table td {
+            padding: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .summary-table th {
+            background-color: #f8f9fa;
+            text-align: left;
+            width: 40%;
+        }
+
+        .summary-table td {
+            text-align: right;
+        }
+
+        /* Transactions Section */
+        .transaction-section h2 {
+            font-size: 14pt;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+
+        .transaction-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9pt;
+        }
+
+        .transaction-table th {
+            background-color: #2c3e50;
+            color: white;
+            padding: 6px;
+            text-align: left;
+        }
+
+        .transaction-table td {
+            padding: 6px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .transaction-table tr.even {
+            background-color: #f9f9f9;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .amount-credit {
+            color: #27ae60;
+        }
+
+        .amount-debit {
+            color: #c0392b;
+        }
+
+        .amount-lend {
+            color: #d35400;
+        }
+
+        .amount-borrow {
+            color: #8e44ad;
+        }
+
+        .footer {
+            margin-top: 30px;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            text-align: center;
+            font-size: 9pt;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header Table -->
+    <table class="header-table">
+        <tr>
+            <td width="60%" valign="top">
+                <div class="brand">
+                    <h1>Track Finance</h1>
+                    <p>Expense & Asset Management</p>
+                </div>
+            </td>
+            <td width="40%" valign="top">
+                <table class="statement-details" align="right">
+                    <tr>
+                        <td><strong>Generated Date:</strong></td>
+                        <td>{{ generated_at|date:"M d, Y" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Period:</strong></td>
+                        <td>{{ start_date|date:"M d, Y" }} - {{ end_date|date:"M d, Y" }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Account Summary -->
+    <div class="summary-wrapper">
+        <div class="account-info">
+            <h2>Account Summary</h2>
+            <p>
+                <strong>Account:</strong> {{ account.name }}<br>
+                <strong>User:</strong> {{ account.user.username }}<br>
+                {% if account.account_number %}<strong>Number:</strong> {{ account.account_number }}{% endif %}
+            </p>
+        </div>
+        <br>
+
+        <table class="summary-table">
+            <tr>
+                <th>Opening Balance</th>
+                <td>Rs. {{ opening_balance|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <th>Total Credit</th>
+                <td class="amount-credit">+Rs. {{ total_credit|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <th>Total Debit</th>
+                <td class="amount-debit">-Rs. {{ total_debit|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <th>Total Lent</th>
+                <td class="amount-lend">-Rs. {{ total_lent|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <th>Total Borrowed</th>
+                <td class="amount-borrow">+Rs. {{ total_borrowed|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <th style="background-color: #e9ecef;">Closing Balance</th>
+                <td style="font-weight: bold; background-color: #e9ecef;">Rs. {{ closing_balance|floatformat:2 }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Transactions -->
+    <div class="transaction-section">
+        <h2>Transactions</h2>
+        {% if transactions %}
+        <table class="transaction-table">
+            <thead>
+                <tr>
+                    <th width="15%">Date</th>
+                    <th width="10%">Type</th>
+                    <th width="40%">Description</th>
+                    <th width="15%">Added By</th>
+                    <th width="20%" align="right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr class="{% cycle 'odd' 'even' %}">
+                    <td>{{ t.timestamp|date:"M d, Y" }}</td>
+                    <td>{{ t.get_type_display }}</td>
+                    <td>
+                        {{ t.description|default:"-"|truncatechars:40 }}
+                        {% if t.counterparty %}
+                        <br><span style="color: #666; font-size: 8pt;">({{ t.counterparty }})</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ t.created_by.username|default:t.user.username }}
+                    </td>
+                    <td align="right"
+                        class="{% if t.type == 'CREDIT' %}amount-credit{% elif t.type == 'DEBIT' %}amount-debit{% elif t.type == 'LEND' %}amount-lend{% else %}amount-borrow{% endif %}">
+                        {% if t.type == 'DEBIT' or t.type == 'LEND' %}-{% else %}+{% endif %}Rs. {{ t.amount|floatformat:2 }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="text-align: center; color: #666; margin-top: 20px;">No transactions found for this period.</p>
+        {% endif %}
+    </div>
+
+    <!-- Footer Content for xhtml2pdf -->
+    <div id="footerContent" style="text-align: center; color: #666; font-size: 9pt;">
+        This is a system-generated statement. Page <pdf:pagenumber> of <pdf:pagecount>
+    </div>
+
+</body>
+
+</html>
