@@ -6,52 +6,7 @@
   <div>
     <h1 style="margin-bottom: 0.5rem">Dashboard</h1>
 
-    <!-- Account Switcher -->
-    <form
-      method="get"
-      class="account-switcher"
-      style="display: flex; align-items: center; gap: 0.5rem"
-    >
-      <label for="account-select" class="text-muted">Account:</label>
-      <select
-        name="account"
-        id="account-select"
-        onchange="this.form.submit()"
-        style="
-          padding: 0.5rem;
-          border-radius: var(--radius-md);
-          border: 1px solid var(--border);
-          font-size: 1rem;
-          min-width: 200px;
-        "
-      >
-        {% for acc in accounts %}
-        <option
-          value="{{ acc.id }}"
-          {%
-          if
-          active_account
-          and
-          acc.id=""
-          ="active_account.id"
-          %}selected{%
-          endif
-          %}
-        >
-          {{ acc.name }} {% if acc.user != user %}(Shared){% endif %}
-        </option>
-        {% endfor %}
-      </select>
-      {% if can_share and active_account %}
-      <!-- <a href="{% url 'share_account' active_account.id %}" class="btn btn-sm btn-outline-primary"
-                style="margin-left: 0.5rem;">
-                Share
-            </a> -->
-      {% endif %}
-      <!-- <a href="{% url 'manage_accounts' %}" class="btn btn-sm btn-outline-secondary" style="margin-left: 0.5rem;">
-                Manage Accounts
-            </a> -->
-    </form>
+
   </div>
 
   <div class="actions" style="display: flex; gap: 0.5rem">
@@ -461,6 +416,18 @@
         </div>
         {% endif %}
 
+        <div style="width: 130px; flex-grow: 1">
+           <label style="display: block; font-size: 0.875rem; margin-bottom: 0.35rem; color: var(--text-muted);">From</label>
+           <input type="date" name="date_from" value="{{ filter_date_from }}" 
+                  style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-md);">
+        </div>
+
+        <div style="width: 130px; flex-grow: 1">
+           <label style="display: block; font-size: 0.875rem; margin-bottom: 0.35rem; color: var(--text-muted);">To</label>
+           <input type="date" name="date_to" value="{{ filter_date_to }}" 
+                  style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-md);">
+        </div>
+
         <div style="display: flex; gap: 0.5rem">
           <button
             type="submit"
@@ -469,7 +436,7 @@
           >
             Filter
           </button>
-          {% if filter_q or filter_category or filter_user %}
+          {% if filter_q or filter_category or filter_user or filter_date_from or filter_date_to %}
           <a
             href="{% url 'dashboard' %}?account={{ active_account.id }}"
             class="btn btn-outline-secondary"
@@ -632,7 +599,7 @@
       >
         {% if transactions.has_previous %}
         <a
-          href="?account={{ active_account.id }}&page={{ transactions.previous_page_number }}{% if filter_q %}&q={{ filter_q }}{% endif %}{% if filter_category %}&category={{ filter_category }}{% endif %}{% if filter_user %}&user={{ filter_user }}{% endif %}"
+          href="?account={{ active_account.id }}&page={{ transactions.previous_page_number }}{% if filter_q %}&q={{ filter_q }}{% endif %}{% if filter_category %}&category={{ filter_category }}{% endif %}{% if filter_user %}&user={{ filter_user }}{% endif %}{% if filter_date_from %}&date_from={{ filter_date_from }}{% endif %}{% if filter_date_to %}&date_to={{ filter_date_to }}{% endif %}"
           class="btn btn-sm btn-outline-secondary"
           style="font-size: 0.875rem"
           >&laquo; Previous</a
@@ -653,7 +620,7 @@
 
         {% if transactions.has_next %}
         <a
-          href="?account={{ active_account.id }}&page={{ transactions.next_page_number }}{% if filter_q %}&q={{ filter_q }}{% endif %}{% if filter_category %}&category={{ filter_category }}{% endif %}{% if filter_user %}&user={{ filter_user }}{% endif %}"
+          href="?account={{ active_account.id }}&page={{ transactions.next_page_number }}{% if filter_q %}&q={{ filter_q }}{% endif %}{% if filter_category %}&category={{ filter_category }}{% endif %}{% if filter_user %}&user={{ filter_user }}{% endif %}{% if filter_date_from %}&date_from={{ filter_date_from }}{% endif %}{% if filter_date_to %}&date_to={{ filter_date_to }}{% endif %}"
           class="btn btn-sm btn-outline-secondary"
           style="font-size: 0.875rem"
           >Next &raquo;</a

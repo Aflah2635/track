@@ -32,11 +32,24 @@ def dashboard(request):
         # Verify access
         try:
             active_account = all_accounts.get(id=account_id)
+            # Save to session
+            request.session['active_account_id'] = active_account.id
         except Account.DoesNotExist:
             active_account = None # Or handle error
     
+    # Try getting from session if not in GET params
+    if not active_account and 'active_account_id' in request.session:
+        try:
+            active_account = all_accounts.get(id=request.session['active_account_id'])
+        except Account.DoesNotExist:
+            # Session account might have been deleted or access revoked
+            del request.session['active_account_id']
+            active_account = None
+
     if not active_account and all_accounts.exists():
         active_account = all_accounts.first()
+        # Set default in session
+        request.session['active_account_id'] = active_account.id
     
     # Calculate data based on active account
     transactions = []
@@ -73,6 +86,8 @@ def dashboard(request):
         query = request.GET.get('q')
         category_filter = request.GET.get('category')
         user_filter = request.GET.get('user')
+        date_from = request.GET.get('date_from')
+        date_to = request.GET.get('date_to')
         
         if query:
             all_txns = all_txns.filter(
@@ -85,6 +100,12 @@ def dashboard(request):
             
         if user_filter and user_filter.isdigit() and active_account.is_shared:
             all_txns = all_txns.filter(created_by_id=user_filter)
+
+        if date_from:
+            all_txns = all_txns.filter(timestamp__date__gte=date_from)
+            
+        if date_to:
+            all_txns = all_txns.filter(timestamp__date__lte=date_to)
             
         # Pagination
         paginator = Paginator(all_txns, 20)
@@ -140,5 +161,7 @@ def dashboard(request):
         'filter_q': query if active_account and 'query' in locals() and query else '',
         'filter_category': int(category_filter) if active_account and 'category_filter' in locals() and category_filter and category_filter.isdigit() else '',
         'filter_user': int(user_filter) if active_account and 'user_filter' in locals() and user_filter and user_filter.isdigit() else '',
+        'filter_date_from': date_from if active_account and 'date_from' in locals() and date_from else '',
+        'filter_date_to': date_to if active_account and 'date_to' in locals() and date_to else '',
     }
     return render(request, 'dashboard.html', context)
