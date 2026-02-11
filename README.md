@@ -8,6 +8,7 @@ A robust, production-ready web application for managing personal and shared fina
 - **Multi-Account Support**: Manage multiple bank accounts or wallets in one place.
 - **Shared Accounts (RBAC)**: Share accounts with family or teams with granular permissions (Owner, Editor, Viewer).
 - **Advanced Transactions**: Track Credit, Debit, Lend, and Borrow records with backdating support.
+- **Enhanced UI / UX**: Modern, premium design with custom dropdowns, glassmorphism effects, and smooth animations.
 - **Statement Generation**: Download detailed PDF statements with date, category, and user filters.
 - **Responsive Design**: Optimized for both desktop and mobile usage.
 

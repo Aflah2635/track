@@ -17,3 +17,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# User specific
+pro.txt
+prompt.txt

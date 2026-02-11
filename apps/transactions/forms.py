@@ -38,6 +38,19 @@ class TransactionForm(forms.ModelForm):
             Q(account__in=accessible_accounts)
         ).distinct()
 
+    def clean(self):
+        cleaned_data = super().clean()
+        account = cleaned_data.get('account')
+        category = cleaned_data.get('category')
+        
+        if account and category:
+            # Check if category belongs to the selected account (if it's not a global category)
+            if category.account and category.account != account:
+                raise forms.ValidationError({
+                    'category': "The selected category does not belong to the selected account."
+                })
+        return cleaned_data
+
     def clean_amount(self):
         amount = self.cleaned_data.get('amount')
         if amount and amount <= 0:

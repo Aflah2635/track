@@ -13,7 +13,42 @@
             {% for field in form %}
             <div class="form-group">
                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {{ field.as_widget }}
+                
+                {% if field.name == 'category' or field.name == 'account' or field.name == 'type' %}
+                    <!-- Custom Dropdown for ChoiceFields -->
+                    <div class="custom-form-dropdown" id="dropdown_{{ field.name }}" data-name="{{ field.name }}">
+                        <input type="hidden" name="{{ field.name }}" id="{{ field.id_for_label }}" value="{{ field.value|default:'' }}">
+                        <div class="dropdown-trigger" tabindex="0" role="combobox" aria-haspopup="listbox" aria-expanded="false">
+                            <span class="selected-text">
+                                {% if field.value %}
+                                    {% for choice_value, choice_label in field.field.choices %}
+                                        {% if choice_value|stringformat:"s" == field.value|stringformat:"s" %}
+                                            {{ choice_label }}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    Select {{ field.label }}
+                                {% endif %}
+                            </span>
+                            <svg class="dropdown-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                        <div class="dropdown-menu" role="listbox">
+                            {% for choice_value, choice_label in field.field.choices %}
+                                {% if choice_value %}
+                                <div class="dropdown-item {% if field.value|stringformat:'s' == choice_value|stringformat:'s' %}active{% endif %}" data-value="{{ choice_value }}" role="option">
+                                    {{ choice_label }}
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- Normal Widget for other fields -->
+                    {{ field.as_widget }}
+                {% endif %}
+
                 {% if field.help_text %}
                 <small class="text-muted">{{ field.help_text }}</small>
                 {% endif %}
@@ -35,44 +70,59 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const accountSelect = document.getElementById('id_account');
-        const categorySelect = document.getElementById('id_category');
+        const accountInput = document.getElementById('id_account');
+        // The category dropdown container
+        const categoryDropdown = document.getElementById('dropdown_category'); 
+        const categoryInput = document.getElementById('id_category');
+        const categoryMenu = categoryDropdown ? categoryDropdown.querySelector('.dropdown-menu') : null;
+        
         const categoryMap = JSON.parse('{{ category_account_map|safe }}');
         
-        // Cache original options
-        const allOptions = Array.from(categorySelect.options);
+        // We need to rebuild the category options when account changes
+        if (accountInput && categoryMenu) {
+            
+            // Store original options content to restore from if needed, 
+            // OR iterate through the existing ones we just rendered.
+            // A better way for custom dropdowns: we can just hide/show items based on data attributes.
+            // Let's modify the items to have data-account-id if we can, or just look up map.
+            
+            // Actually, we can just clear and rebuild the HTML of the menu, but we need the labels.
+            // Let's parse the existing items into a JS array on load.
+            const allCategoryItems = Array.from(categoryMenu.querySelectorAll('.dropdown-item')).map(item => ({
+                value: item.dataset.value,
+                label: item.textContent.trim(),
+                element: item
+            }));
 
-        function filterCategories() {
-            const selectedAccount = accountSelect.value;
-            
-            // Clear current options
-            categorySelect.innerHTML = '';
-            
-            allOptions.forEach(option => {
-                const catId = parseInt(option.value);
+            function filterCategories() {
+                const selectedAccount = accountInput.value;
                 
-                // Always show placeholder/empty option
-                if (!option.value) {
-                    categorySelect.appendChild(option);
-                    return;
-                }
+                // Reset selected text if current selection is invalid? 
+                // For now, let's just filter the list.
                 
-                const catAccount = categoryMap[catId];
-                
-                // Show if global or matches selected account
-                if (catAccount === 'global' || catAccount == selectedAccount) {
-                    categorySelect.appendChild(option);
-                }
-            });
-            
-            // If currently selected value is now hidden, reset to empty
-            if (!Array.from(categorySelect.options).some(opt => opt.value === categorySelect.value)) {
-                categorySelect.value = '';
+                allCategoryItems.forEach(item => {
+                    const catId = parseInt(item.value);
+                    const catAccount = categoryMap[catId];
+                    
+                    // Show if global or matches selected account
+                    const isVisible = (catAccount === 'global' || catAccount == selectedAccount);
+                    item.element.style.display = isVisible ? 'flex' : 'none';
+                    
+                    // If hidden and currently selected, we might want to clear selection.
+                    if (!isVisible && categoryInput.value == item.value) {
+                         // clear
+                         categoryInput.value = '';
+                         const displayText = categoryDropdown.querySelector('.selected-text');
+                         if(displayText) displayText.textContent = 'Select Category';
+                         item.element.classList.remove('active');
+                    }
+                });
             }
-        }
 
-        if (accountSelect && categorySelect) {
-            accountSelect.addEventListener('change', filterCategories);
+            // Listen for changes on the account hidden input
+            // Our Dropdown class dispatches a 'change' event on the input.
+            accountInput.addEventListener('change', filterCategories);
+            
             // Initial filter
             filterCategories();
         }

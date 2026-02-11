@@ -621,3 +621,215 @@ tbody tr:last-child td {
     margin-bottom: 2rem;
     font-size: 1.125rem;
 }
+
+/* Custom Dropdown Styling */
+.custom-dropdown, .custom-form-dropdown {
+    position: relative;
+    width: 280px; /* Default width */
+    font-family: 'Inter', sans-serif;
+}
+
+.custom-form-dropdown {
+    width: 100%; /* Form dropdowns usually full width of container */
+}
+
+.dropdown-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.75rem 1rem; /* Increased vertical padding */
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; 
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* Softer shadow start */
+    user-select: none;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.dropdown-trigger:hover, .custom-dropdown.active .dropdown-trigger, .custom-form-dropdown.active .dropdown-trigger {
+    border-color: var(--brand-500);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
+}
+
+.custom-dropdown.active .dropdown-trigger, .custom-form-dropdown.active .dropdown-trigger {
+     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); /* Focus ring effect */
+}
+
+.dropdown-trigger .account-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px; /* More spacing between name and role */
+}
+
+.dropdown-trigger .account-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--primary-900);
+    line-height: 1.2;
+}
+
+.dropdown-trigger .account-role {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.dropdown-chevron {
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy animation */
+    color: var(--text-muted);
+    margin-left: 0.5rem;
+}
+
+.custom-dropdown.active .dropdown-chevron, .custom-form-dropdown.active .dropdown-chevron {
+    transform: rotate(180deg);
+    color: var(--brand-500);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    width: 100%;
+    background-color: var(--bg-surface);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: 20px; /* Smoother corners */
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* Deep premium shadow */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(0.98);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); /* Snappy easing */
+    z-index: 100;
+    overflow: hidden;
+    padding: 0.75rem;
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.custom-dropdown.active .dropdown-menu, .custom-form-dropdown.active .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.dropdown-group-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    padding: 0.5rem 0.75rem 0.35rem;
+    font-weight: 700;
+    opacity: 0.8;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    margin-bottom: 4px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: var(--text-main);
+    border: 1px solid transparent;
+}
+
+.dropdown-item:hover {
+    background-color: var(--bg-body);
+    transform: translateX(2px); /* Subtle nudge */
+}
+
+.dropdown-item.active {
+    background-color: rgba(99, 102, 241, 0.05); 
+    color: var(--brand-600);
+    border-color: rgba(99, 102, 241, 0.1);
+}
+
+.dropdown-item .item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dropdown-item .item-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.dropdown-item .item-role {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.dropdown-item.active .item-role {
+    color: var(--brand-500);
+}
+
+.dropdown-item .check-icon {
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    color: var(--brand-600);
+}
+
+.dropdown-item.active .check-icon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.account-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    margin-left: 8px;
+    vertical-align: middle;
+    letter-spacing: 0.02em;
+}
+
+.badge-personal {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #059669; /* Darker green for contrast */
+}
+
+.badge-shared {
+    background-color: rgba(99, 102, 241, 0.15);
+    color: #4f46e5; /* Darker indigo for contrast */
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 767px) {
+    .custom-dropdown, .custom-form-dropdown {
+        width: 100%;
+    }
+    
+    .dropdown-menu {
+        width: 100%;
+        position: fixed;
+        bottom: 0;
+        top: auto;
+        left: 0;
+        border-radius: 24px 24px 0 0;
+        transform: translateY(100%);
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+        padding: 1.5rem 1rem 2rem; /* More safe area padding */
+        border: none;
+        backdrop-filter: blur(16px);
+    }
+    
+    .custom-dropdown.active .dropdown-menu, .custom-form-dropdown.active .dropdown-menu {
+        transform: translateY(0);
+    }
+    
+    .custom-dropdown-overlay {
+        /* Add an overlay if needed, or rely on outside click */
+    }
+}

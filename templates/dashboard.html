@@ -6,7 +6,121 @@
   <div>
     <h1 style="margin-bottom: 0.5rem">Dashboard</h1>
 
+    {% if accounts %}
+    <div class="custom-dropdown" id="accountDropdown">
+        <div class="dropdown-trigger" 
+             onclick="toggleDropdown()" 
+             tabindex="0" 
+             role="button" 
+             aria-haspopup="true" 
+             aria-expanded="false"
+             onkeydown="handleTriggerKey(event)">
+            <div class="account-info">
+                <span class="account-name">
+                    {{ active_account.name }}
+                    {% if active_account.user != request.user %}
+                        <span class="account-badge badge-shared">Shared</span>
+                    {% else %}
+                        <!-- <span class="account-badge badge-personal">Personal</span> -->
+                    {% endif %}
+                </span>
+                <span class="account-role">
+                    {% if active_account.user == request.user %}Owner{% else %}Editor{% endif %}
+                </span>
+            </div>
+            <svg class="dropdown-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        </div>
+        <div class="dropdown-menu" role="menu">
+            <div class="dropdown-group-label">My Accounts</div>
+            {% for acc in accounts %}
+                {% if acc.user == request.user %}
+                <a href="?account={{ acc.id }}" class="dropdown-item {% if active_account.id == acc.id %}active{% endif %}" role="menuitem">
+                    <div class="item-info">
+                        <span class="item-name">{{ acc.name }}</span>
+                        <span class="item-role">Owner</span>
+                    </div>
+                    {% if active_account.id == acc.id %}
+                    <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    {% endif %}
+                </a>
+                {% endif %}
+            {% endfor %}
 
+            <div class="dropdown-group-label" style="margin-top: 0.5rem; border-top: 1px solid var(--border); padding-top: 0.75rem;">Shared With Me</div>
+            {% for acc in accounts %}
+                {% if acc.user != request.user %}
+                <a href="?account={{ acc.id }}" class="dropdown-item {% if active_account.id == acc.id %}active{% endif %}" role="menuitem">
+                     <div class="item-info">
+                        <span class="item-name">{{ acc.name }}</span>
+                        <span class="item-role">Shared by {{ acc.user.username }}</span>
+                    </div>
+                    {% if active_account.id == acc.id %}
+                    <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    {% endif %}
+                </a>
+                {% endif %}
+            {% endfor %}
+            
+             <div style="margin-top: 0.5rem; border-top: 1px solid var(--border); padding-top: 0.5rem;">
+                <a href="{% url 'create_account' %}" class="dropdown-item" role="menuitem" style="color: var(--brand-600); justify-content: start; gap: 0.5rem;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                         <line x1="12" y1="5" x2="12" y2="19"></line>
+                         <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span class="item-name">Add New Account</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('accountDropdown');
+            const trigger = dropdown.querySelector('.dropdown-trigger');
+            const isActive = dropdown.classList.toggle('active');
+            trigger.setAttribute('aria-expanded', isActive);
+        }
+
+        function handleTriggerKey(event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                toggleDropdown();
+            }
+            if (event.key === 'Escape') {
+                const dropdown = document.getElementById('accountDropdown');
+                dropdown.classList.remove('active');
+                dropdown.querySelector('.dropdown-trigger').setAttribute('aria-expanded', 'false');
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('accountDropdown');
+            if (dropdown && !dropdown.contains(event.target)) {
+                dropdown.classList.remove('active');
+                dropdown.querySelector('.dropdown-trigger').setAttribute('aria-expanded', 'false');
+            }
+        });
+        
+        // Close on Escape global
+        document.addEventListener('keydown', function(event) {
+             if (event.key === 'Escape') {
+                const dropdown = document.getElementById('accountDropdown');
+                if (dropdown && dropdown.classList.contains('active')) {
+                    dropdown.classList.remove('active');
+                    dropdown.querySelector('.dropdown-trigger').setAttribute('aria-expanded', 'false');
+                    dropdown.querySelector('.dropdown-trigger').focus();
+                }
+            }
+        });
+    </script>
+    {% endif %}
   </div>
 
   <div class="actions" style="display: flex; gap: 0.5rem">
@@ -22,6 +136,7 @@
   </div>
 </div>
 
+{% if active_account %}
 <!-- Statement Download Modal -->
 <div
   id="statementModal"
@@ -180,33 +295,34 @@
 
 <script>
   function openStatementModal() {
-      const modal = document.getElementById('statementModal');
-      const form = document.getElementById('statementForm');
-      
-      // Pre-fill dates (Start of month to Today)
-      const today = new Date();
-      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const modal = document.getElementById("statementModal");
+    const form = document.getElementById("statementForm");
 
-      document.querySelector('input[name="end_date"]').valueAsDate = today;
-      document.querySelector('input[name="start_date"]').valueAsDate = startOfMonth;
+    // Pre-fill dates (Start of month to Today)
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-      modal.style.display = 'block';
+    document.querySelector('input[name="end_date"]').valueAsDate = today;
+    document.querySelector('input[name="start_date"]').valueAsDate =
+      startOfMonth;
+
+    modal.style.display = "block";
   }
 
   function closeStatementModal() {
-      document.getElementById('statementModal').style.display = 'none';
+    document.getElementById("statementModal").style.display = "none";
   }
 
   // Close on click outside
-  window.onclick = function(event) {
-      const modal = document.getElementById('statementModal');
-      if (event.target == modal) {
-          closeStatementModal();
-      }
-  }
+  window.onclick = function (event) {
+    const modal = document.getElementById("statementModal");
+    if (event.target == modal) {
+      closeStatementModal();
+    }
+  };
 </script>
 
-{% if active_account %}
+
 <div
   class="summary-grid"
   style="
@@ -326,7 +442,7 @@
           />
         </div>
 
-        <div style="width: 150px; flex-grow: 1">
+        <div style="flex-grow: 1; min-width: 150px;">
           <label
             style="
               display: block;
@@ -336,35 +452,37 @@
             "
             >Category</label
           >
-          <select
-            name="category"
-            style="
-              width: 100%;
-              padding: 0.5rem;
-              border: 1px solid var(--border);
-              border-radius: var(--radius-md);
-            "
-          >
-            <option value="">All Categories</option>
-            {% for cat in categories %}
-            <option
-              value="{{ cat.id }}"
-              {%
-              if
-              filter_category=""
-              ="cat.id"
-              %}selected{%
-              endif
-              %}
-            >
-              {{ cat.name }}
-            </option>
-            {% endfor %}
-          </select>
+          <div class="custom-form-dropdown" data-name="category" data-submit-on-change="true">
+             <input type="hidden" name="category" value="{{ filter_category|default:'' }}">
+             <div class="dropdown-trigger" tabindex="0" role="combobox" aria-haspopup="listbox" aria-expanded="false">
+                <span class="selected-text">
+                    {% if filter_category %}
+                        {% for cat in categories %}
+                            {% if cat.id|stringformat:"i" == filter_category|stringformat:"i" %}{{ cat.name }}{% endif %}
+                        {% endfor %}
+                    {% else %}
+                        All Categories
+                    {% endif %}
+                </span>
+                <svg class="dropdown-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+             </div>
+             <div class="dropdown-menu" role="listbox">
+                <div class="dropdown-item {% if not filter_category %}active{% endif %}" data-value="" role="option">
+                    All Categories
+                </div>
+                {% for cat in categories %}
+                <div class="dropdown-item {% if filter_category|stringformat:'i' == cat.id|stringformat:'i' %}active{% endif %}" data-value="{{ cat.id }}" role="option">
+                    {{ cat.name }}
+                </div>
+                {% endfor %}
+             </div>
+          </div>
         </div>
 
         {% if active_account.is_shared %}
-        <div style="width: 150px; flex-grow: 1">
+        <div style="flex-grow: 1; min-width: 150px;">
           <label
             style="
               display: block;
@@ -374,58 +492,90 @@
             "
             >Added By</label
           >
-          <select
-            name="user"
+          <div class="custom-form-dropdown" data-name="user" data-submit-on-change="true">
+             <input type="hidden" name="user" value="{{ filter_user|default:'' }}">
+             <div class="dropdown-trigger" tabindex="0" role="combobox" aria-haspopup="listbox" aria-expanded="false">
+                <span class="selected-text">
+                    {% if filter_user %}
+                        {% if filter_user|stringformat:"i" == active_account.user.id|stringformat:"i" %}
+                            {{ active_account.user.username }} (Owner)
+                        {% endif %}
+                        {% for access in account_users %}
+                             {% if access.user.id|stringformat:"i" == filter_user|stringformat:"i" %}
+                                {{ access.user.username }}
+                             {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        All Users
+                    {% endif %}
+                </span>
+                <svg class="dropdown-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+             </div>
+             <div class="dropdown-menu" role="listbox">
+                <div class="dropdown-item {% if not filter_user %}active{% endif %}" data-value="" role="option">
+                    All Users
+                </div>
+                <!-- Owner -->
+                <div class="dropdown-item {% if filter_user|stringformat:'i' == active_account.user.id|stringformat:'i' %}active{% endif %}" data-value="{{ active_account.user.id }}" role="option">
+                    {{ active_account.user.username }} (Owner)
+                </div>
+                <!-- Shared Users -->
+                {% for access in account_users %}
+                <div class="dropdown-item {% if filter_user|stringformat:'i' == access.user.id|stringformat:'i' %}active{% endif %}" data-value="{{ access.user.id }}" role="option">
+                     {{ access.user.username }}
+                </div>
+                {% endfor %}
+             </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <div style="width: 130px; flex-grow: 1">
+          <label
+            style="
+              display: block;
+              font-size: 0.875rem;
+              margin-bottom: 0.35rem;
+              color: var(--text-muted);
+            "
+            >From</label
+          >
+          <input
+            type="date"
+            name="date_from"
+            value="{{ filter_date_from }}"
             style="
               width: 100%;
               padding: 0.5rem;
               border: 1px solid var(--border);
               border-radius: var(--radius-md);
             "
+          />
+        </div>
+
+        <div style="width: 130px; flex-grow: 1">
+          <label
+            style="
+              display: block;
+              font-size: 0.875rem;
+              margin-bottom: 0.35rem;
+              color: var(--text-muted);
+            "
+            >To</label
           >
-            <option value="">All Users</option>
-            <!-- Owner -->
-            <option
-              value="{{ active_account.user.id }}"
-              {%
-              if
-              filter_user=""
-              ="active_account.user.id"
-              %}selected{%
-              endif
-              %}
-            >
-              {{ active_account.user.username }} (Owner)
-            </option>
-            <!-- Shared Users -->
-            {% for access in account_users %}
-            <option
-              value="{{ access.user.id }}"
-              {%
-              if
-              filter_user=""
-              ="access.user.id"
-              %}selected{%
-              endif
-              %}
-            >
-              {{ access.user.username }}
-            </option>
-            {% endfor %}
-          </select>
-        </div>
-        {% endif %}
-
-        <div style="width: 130px; flex-grow: 1">
-           <label style="display: block; font-size: 0.875rem; margin-bottom: 0.35rem; color: var(--text-muted);">From</label>
-           <input type="date" name="date_from" value="{{ filter_date_from }}" 
-                  style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-md);">
-        </div>
-
-        <div style="width: 130px; flex-grow: 1">
-           <label style="display: block; font-size: 0.875rem; margin-bottom: 0.35rem; color: var(--text-muted);">To</label>
-           <input type="date" name="date_to" value="{{ filter_date_to }}" 
-                  style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-md);">
+          <input
+            type="date"
+            name="date_to"
+            value="{{ filter_date_to }}"
+            style="
+              width: 100%;
+              padding: 0.5rem;
+              border: 1px solid var(--border);
+              border-radius: var(--radius-md);
+            "
+          />
         </div>
 
         <div style="display: flex; gap: 0.5rem">
@@ -615,7 +765,8 @@
             color: var(--text-muted);
           "
         >
-          Page {{ transactions.number }} of {{ transactions.paginator.num_pages }}
+          Page {{ transactions.number }} of {{ transactions.paginator.num_pages
+          }}
         </span>
 
         {% if transactions.has_next %}
