@@ -7,7 +7,7 @@ A robust, production-ready web application for managing personal and shared fina
 - **Smart Dashboard**: Real-time overview of balance, credit, debit, and debts.
 - **Multi-Account Support**: Manage multiple bank accounts or wallets in one place.
 - **Shared Accounts (RBAC)**: Share accounts with family or teams with granular permissions (Owner, Editor, Viewer).
-- **Advanced Transactions**: Track Credit, Debit, Lend, and Borrow records with backdating support.
+- **Advanced Transactions**: Track Credit, Debit, Lend, and Borrow records with backdating support, plus one-click "Settle" functionality.
 - **Enhanced UI / UX**: Modern, premium design with custom dropdowns, glassmorphism effects, and smooth animations.
 - **Statement Generation**: Download detailed PDF statements with date, category, and user filters.
 - **Responsive Design**: Optimized for both desktop and mobile usage.
@@ -15,9 +15,18 @@ A robust, production-ready web application for managing personal and shared fina
 ### 🛠 System & Admin
 
 - **Role-Based Access Control (RBAC)**: Secure permission handling for resources.
+- **Account Limits**: Smart account freezing/unfreezing logic based on subscription tiers.
 - **Security**: Login activity tracking, forced logout, and session management.
 - **Admin Controls**: Maintenance mode, Read-only mode, and User management.
 - **Discord Integration**: Real-time audit logging to private channels and remote maintenance control via slash commands.
+
+### 🚀 Recent Updates (v2)
+
+- **Subscription Logic**: Implemented smart account freezing/unfreezing based on subscription plans (Basic, Plus, Pro).
+- **Debt Settlement**: Added a dedicated "Settle" button for Lend/Borrow transactions to easily clear outstanding debts.
+- **Enhanced Dashboard**: Added "Cash Flow" statistics (Lend vs Borrow) to the main dashboard.
+- **Stability Improvements**: Fixed PDF generation issues, CSV/Excel export bugs, and template syntax errors.
+- **UI Polish**: Standardized custom dropdowns across all forms and refined the Profile page layout.
 
 ## 💻 Tech Stack
 
