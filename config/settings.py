@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
 
     # Local apps
     'apps.users',
@@ -53,6 +54,8 @@ INSTALLED_APPS = [
     'apps.transactions.apps.TransactionsConfig',
     'apps.core',
     'apps.notifications.apps.NotificationsConfig',
+    'apps.subscriptions.apps.SubscriptionsConfig',
+    'apps.custom_admin.apps.CustomAdminConfig',
 ]
 
 MIDDLEWARE = [
@@ -65,6 +68,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'apps.core.middleware.MaintenanceMiddleware',
+    'apps.subscriptions.middleware.SubscriptionMiddleware',
+
 
 ]
 
@@ -125,7 +130,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 

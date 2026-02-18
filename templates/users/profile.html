@@ -4,129 +4,209 @@
 {% block title %}Profile Settings - ExpenseTracker{% endblock %}
 
 {% block content %}
-<div class="header-actions mb-4">
-    <h1>Profile Settings</h1>
-</div>
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-white tracking-tight mb-2">Profile Settings</h1>
+        <p class="text-slate-400">Manage your personal information and account security.</p>
+    </div>
 
-<div class="content-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem;">
-    <!-- Profile Info Card -->
-    <div class="card">
-        <h2 style="font-size: 1.25rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
-            Your Profile
-        </h2>
-        <div style="display: flex; flex-direction: column; gap: 1rem;">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <div style="width: 60px; height: 60px; background: var(--primary-100); color: var(--primary-700); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700;">
-                    {{ user.username|make_list|first|upper }}
-                </div>
-                <div>
-                    <h3 style="margin: 0; font-size: 1.1rem;">{{ user.username }}</h3>
-                    <p class="text-muted" style="margin: 0;">{{ user.email }}</p>
-                </div>
-            </div>
-            
-            <div style="margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
-                <div class="info-row" style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                    <span class="text-muted">Member Since</span>
-                    <span style="font-weight: 500;">{{ user.date_joined|date:"M d, Y" }}</span>
-                </div>
-                <div class="info-row" style="display: flex; justify-content: space-between;">
-                    <span class="text-muted">Last Login</span>
-                    <span style="font-weight: 500;">{{ user.last_login|date:"M d, Y H:i" }}</span>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column: Profile Card -->
+        <div class="lg:col-span-1">
+            <div class="glass-card p-6 rounded-2xl border border-slate-800 relative overflow-hidden text-center sticky top-8">
+                <!-- Glow Effect -->
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-primary/20 rounded-full blur-[60px] pointer-events-none"></div>
+                
+                <div class="relative z-10">
+                    <div class="w-24 h-24 mx-auto bg-slate-800 rounded-full flex items-center justify-center mb-4 ring-4 ring-slate-800 shadow-xl relative group cursor-default">
+                        <span class="text-4xl font-bold text-primary">
+                            {{ user.username|make_list|first|upper }}
+                        </span>
+                        <div class="absolute inset-0 rounded-full border border-slate-700"></div>
+                    </div>
+                    
+                    <h2 class="text-xl font-bold text-white mb-1">{{ user.username }}</h2>
+                    <p class="text-slate-400 text-sm mb-6">{{ user.email }}</p>
+
+                    <div class="border-t border-slate-800 pt-6 space-y-4 text-left">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-500">Member Since</span>
+                            <span class="text-slate-200 font-medium">{{ user.date_joined|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-500">Last Login</span>
+                            <span class="text-slate-200 font-medium">{{ user.last_login|date:"M d, H:i" }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Update Details Form -->
-    <div class="card">
-        <h2 style="font-size: 1.25rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
-            Update Profile
-        </h2>
-        <form method="post" action="{% url 'profile_update' %}">
-            {% csrf_token %}
-            
-            {% if profile_form.non_field_errors %}
-            <div class="alert alert-danger" style="color: var(--danger); background: rgba(220, 53, 69, 0.1); padding: 0.75rem; border-radius: 0.375rem; margin-bottom: 1rem;">
-                {{ profile_form.non_field_errors }}
+        <!-- Right Column: Forms -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Update Profile Form -->
+            <div class="glass-card p-8 rounded-2xl border border-slate-800">
+                <div class="flex items-center gap-3 mb-6 border-b border-slate-800 pb-4">
+                    <span class="material-icons-round text-primary">person</span>
+                    <h2 class="text-xl font-bold text-white">Edit Profile</h2>
+                </div>
+
+                <form method="post" action="{% url 'profile_update' %}" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    {% if profile_form.non_field_errors %}
+                    <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                        {{ profile_form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label for="{{ profile_form.username.id_for_label }}" class="text-sm font-medium text-slate-300">Username</label>
+                            <input type="text" name="{{ profile_form.username.name }}" id="{{ profile_form.username.id_for_label }}" 
+                                   value="{{ profile_form.username.value|default:'' }}"
+                                   class="w-full bg-slate-800/50 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none">
+                            {% if profile_form.username.errors %}
+                            <p class="text-red-400 text-xs mt-1">{{ profile_form.username.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="space-y-2">
+                            <label for="{{ profile_form.email.id_for_label }}" class="text-sm font-medium text-slate-300">Email Address</label>
+                            <input type="email" name="{{ profile_form.email.name }}" id="{{ profile_form.email.id_for_label }}" 
+                                   value="{{ profile_form.email.value|default:'' }}"
+                                   class="w-full bg-slate-800/50 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none">
+                            {% if profile_form.email.errors %}
+                            <p class="text-red-400 text-xs mt-1">{{ profile_form.email.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end pt-2">
+                        <button type="submit" class="px-6 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold shadow-lg shadow-primary/25 transition-all text-sm active:scale-[0.98]">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
             </div>
-            {% endif %}
 
-            <div class="form-group mb-3">
-                <label for="{{ profile_form.username.id_for_label }}" class="form-label">Username</label>
-                <input type="text" name="{{ profile_form.username.name }}" id="{{ profile_form.username.id_for_label }}" 
-                       value="{{ profile_form.username.value|default:'' }}"
-                       class="form-control" 
-                       style="width: 100%; padding: 0.625rem; border: 1px solid var(--border); border-radius: 0.375rem; margin-top: 0.25rem;">
-                {% if profile_form.username.errors %}
-                <small class="text-danger" style="color: var(--danger); display: block; margin-top: 0.25rem;">
-                    {{ profile_form.username.errors.0 }}
-                </small>
-                {% endif %}
+            <!-- Subscription Section -->
+            <div class="glass-card p-8 rounded-2xl border border-slate-800">
+                <div class="flex items-center justify-between mb-6 border-b border-slate-800 pb-4">
+                    <div class="flex items-center gap-3">
+                        <span class="material-icons-round text-emerald-500">card_membership</span>
+                        <h2 class="text-xl font-bold text-white">Subscription</h2>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider 
+                        {% if user.subscription.plan.name == 'PRO' %}bg-primary/10 text-primary border border-primary/20
+                        {% elif user.subscription.plan.name == 'PLUS' %}bg-purple-500/10 text-purple-400 border border-purple-500/20
+                        {% else %}bg-slate-700/50 text-slate-400 border border-slate-600/50{% endif %}">
+                        {{ user.subscription.plan.get_name_display }}
+                    </span>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-1">
+                            <p class="text-sm font-medium text-slate-400">Current Status</p>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full {% if user.subscription.is_active %}bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]{% else %}bg-red-500{% endif %}"></span>
+                                <p class="text-white font-medium">{{ user.subscription.get_status_display }}</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1">
+                            <p class="text-sm font-medium text-slate-400">
+                                Started On
+                            </p>
+                            <p class="text-white font-medium">
+                                {{ user.subscription.start_date|date:"M d, Y" }}
+                            </p>
+                        </div>
+
+                        <div class="space-y-1">
+                            <p class="text-sm font-medium text-slate-400">
+                                Ends On
+                            </p>
+                            <p class="text-white font-medium">
+                                {% if user.subscription.end_date %}
+                                    {{ user.subscription.end_date|date:"M d, Y" }}
+                                {% else %}
+                                    Lifetime
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <div class="space-y-1">
+                            <p class="text-sm font-medium text-slate-400">
+                                Renew Needed On
+                            </p>
+                            <p class="text-white font-medium">
+                                {% if user.subscription.end_date %}
+                                    {{ user.subscription.end_date|date:"M d, Y" }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if user.subscription.plan.name != 'PRO' %}
+                    <div class="pt-2">
+                        <a href="{% url 'pricing' %}" class="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-primary to-purple-600 hover:from-primary-dark hover:to-purple-700 text-white rounded-xl font-bold shadow-lg shadow-primary/25 transition-all text-sm group">
+                            <span class="material-icons-round text-base group-hover:scale-110 transition-transform">upgrade</span>
+                            Upgrade Plan
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
 
-            <div class="form-group mb-3">
-                <label for="{{ profile_form.email.id_for_label }}" class="form-label">Email Address</label>
-                <input type="email" name="{{ profile_form.email.name }}" id="{{ profile_form.email.id_for_label }}" 
-                       value="{{ profile_form.email.value|default:'' }}"
-                       class="form-control" 
-                       style="width: 100%; padding: 0.625rem; border: 1px solid var(--border); border-radius: 0.375rem; margin-top: 0.25rem;">
-                {% if profile_form.email.errors %}
-                <small class="text-danger" style="color: var(--danger); display: block; margin-top: 0.25rem;">
-                    {{ profile_form.email.errors.0 }}
-                </small>
-                {% endif %}
-            </div>
+            <!-- Security Section -->
+            <div class="glass-card p-8 rounded-2xl border border-slate-800">
+                <div class="flex items-center gap-3 mb-6 border-b border-slate-800 pb-4">
+                    <span class="material-icons-round text-amber-500">lock</span>
+                    <h2 class="text-xl font-bold text-white">Security</h2>
+                </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
-                Save Changes
-            </button>
-        </form>
-    </div>
+                <form method="post" action="{% url 'password_change' %}" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    {% if password_form.non_field_errors %}
+                    <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                        {{ password_form.non_field_errors }}
+                    </div>
+                    {% endif %}
 
-    <!-- Change Password Form -->
-    <div class="card">
-        <h2 style="font-size: 1.25rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
-            Security
-        </h2>
-        <form method="post" action="{% url 'password_change' %}">
-            {% csrf_token %}
-            
-            {% if password_form.non_field_errors %}
-            <div class="alert alert-danger" style="color: var(--danger); background: rgba(220, 53, 69, 0.1); padding: 0.75rem; border-radius: 0.375rem; margin-bottom: 1rem;">
-                {{ password_form.non_field_errors }}
-            </div>
-            {% endif %}
+                    {% for field in password_form %}
+                    <div class="space-y-2">
+                        <label for="{{ field.id_for_label }}" class="text-sm font-medium text-slate-300">{{ field.label }}</label>
+                        <input type="password" name="{{ field.name }}" id="{{ field.id_for_label }}" 
+                               class="w-full bg-slate-800/50 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none">
+                        
+                        {% if field.help_text %}
+                        <p class="text-slate-500 text-xs">{{ field.help_text|safe }}</p>
+                        {% endif %}
+                        
+                        {% if field.errors %}
+                        <p class="text-red-400 text-xs mt-1">{{ field.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
 
-            {% for field in password_form %}
-            <div class="form-group mb-3">
-                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                <input type="password" name="{{ field.name }}" id="{{ field.id_for_label }}" 
-                       class="form-control" 
-                       style="width: 100%; padding: 0.625rem; border: 1px solid var(--border); border-radius: 0.375rem; margin-top: 0.25rem;">
-                {% if field.errors %}
-                <small class="text-danger" style="color: var(--danger); display: block; margin-top: 0.25rem;">
-                    {{ field.errors.0 }}
-                </small>
-                {% endif %}
-                {% if field.help_text %}
-                <small class="text-muted" style="font-size: 0.8rem; display: block; margin-top: 0.25rem;">
-                    {{ field.help_text|safe }}
-                </small>
-                {% endif %}
+                    <div class="flex flex-col sm:flex-row gap-4 pt-2">
+                        <button type="submit" class="flex-1 px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 hover:border-slate-600 rounded-xl font-bold transition-all text-sm active:scale-[0.98]">
+                            Change Password
+                        </button>
+                        <a href="{% url 'security_settings' %}" class="flex-1 px-6 py-2.5 bg-slate-800/50 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/50 hover:border-slate-700 rounded-xl font-medium transition-all text-sm text-center flex items-center justify-center gap-2">
+                             <span class="material-icons-round text-base">shield</span>
+                             Manage Sessions
+                        </a>
+                    </div>
+                </form>
             </div>
-            {% endfor %}
-
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <button type="submit" class="btn btn-primary" style="background-color: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border); width: 100%; justify-content: center;">
-                    Change Password
-                </button>
-                
-                <a href="{% url 'security_settings' %}" class="btn btn-outline-secondary" style="width: 100%; justify-content: center; text-align: center;">
-                     Manage Security & Sessions
-                </a>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -146,7 +146,8 @@
                 <td><strong>Net Change:</strong></td>
                 <td class="amount-neutral">
                     {% if total_credit > total_debit %}+{% endif %}
-                    {{ closing_balance|add:opening_balance|default:"0" }} <!-- Quick math hack or just use precalc -->
+                    {% if total_credit > total_debit %}+{% endif %}
+                    {{ net_change|default:"0" }}
                     <!-- Actually the nice comparison is hard in template math. Let's just trust context -->
                 </td>
             </tr>

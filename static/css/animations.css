@@ -1,0 +1,172 @@
+/* Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Utility Classes */
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-slide-in-up {
+  animation: slideInUp 0.5s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.4s ease-out forwards;
+}
+
+.animate-scale-up {
+  animation: scaleUp 0.3s ease-out forwards;
+}
+
+/* Page Transitions */
+body.page-transition {
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Hover Effects */
+.hover-scale {
+  transition:
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1); /* shadow-lg-ish */
+}
+
+/* Button Ripple/Click Effect */
+.btn-click-effect {
+  transition: transform 0.1s;
+}
+
+.btn-click-effect:active {
+  transform: scale(0.97);
+}
+
+/* Dropdown Animation */
+details[open] summary ~ div {
+  animation: slideDownFade 0.2s ease-out forwards;
+}
+
+/* Modal Animation */
+.modal-enter {
+  animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Table Row Animation */
+.table-row-animate {
+  opacity: 0; /* Start hidden for animation */
+  animation: slideInUp 0.4s ease-out forwards;
+}
+
+/* Stagger delays for first 20 rows */
+.table-row-animate:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.table-row-animate:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.table-row-animate:nth-child(3) {
+  animation-delay: 0.15s;
+}
+.table-row-animate:nth-child(4) {
+  animation-delay: 0.2s;
+}
+.table-row-animate:nth-child(5) {
+  animation-delay: 0.25s;
+}
+.table-row-animate:nth-child(6) {
+  animation-delay: 0.3s;
+}
+.table-row-animate:nth-child(7) {
+  animation-delay: 0.35s;
+}
+.table-row-animate:nth-child(8) {
+  animation-delay: 0.4s;
+}
+.table-row-animate:nth-child(9) {
+  animation-delay: 0.45s;
+}
+.table-row-animate:nth-child(10) {
+  animation-delay: 0.5s;
+}
+.table-row-animate:nth-child(11) {
+  animation-delay: 0.55s;
+}
+.table-row-animate:nth-child(12) {
+  animation-delay: 0.6s;
+}
+.table-row-animate:nth-child(13) {
+  animation-delay: 0.65s;
+}
+.table-row-animate:nth-child(14) {
+  animation-delay: 0.7s;
+}
+.table-row-animate:nth-child(15) {
+  animation-delay: 0.75s;
+}
+
+/* Notification Slide In */
+.notification-slide-in {
+  animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.notification-slide-out {
+  transition: all 0.4s ease-in;
+  opacity: 0;
+  transform: translateX(100%);
+}

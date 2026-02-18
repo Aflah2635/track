@@ -1,0 +1,81 @@
+{% extends 'custom_admin/base.html' %}
+
+{% block title %}{% if form.instance.pk %}Edit Transaction{% else %}Add Transaction{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-white mb-2">{% if form.instance.pk %}Edit Transaction{% else %}Add Transaction{% endif %}</h1>
+        <p class="text-slate-400">{% if form.instance.pk %}Update transaction details.{% else %}Record a new transaction.{% endif %}</p>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-lg">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            {% for field in form %}
+            <div class="space-y-2">
+                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-300">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                </label>
+                
+                {% if field.field.widget.input_type == 'select' %}
+                    <select name="{{ field.name }}" 
+                            id="{{ field.id_for_label }}"
+                            class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all dark:[color-scheme:dark]"
+                            {% if field.field.required %}required{% endif %}>
+                        {% for x, y in field.field.choices %}
+                        <option value="{{ x }}" {% if field.value == x %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                {% elif field.field.widget.input_type == 'checkbox' %}
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" 
+                               name="{{ field.name }}" 
+                               id="{{ field.id_for_label }}"
+                               {% if field.value %}checked{% endif %}
+                               class="w-5 h-5 rounded border-slate-700 bg-slate-950 text-primary focus:ring-primary focus:ring-offset-slate-900 transition-all">
+                        <span class="text-sm text-slate-400">{{ field.help_text }}</span>
+                    </div>
+                {% else %}
+                    <input type="{{ field.field.widget.input_type|default:'text' }}" 
+                           name="{{ field.name }}" 
+                           id="{{ field.id_for_label }}" 
+                           value="{{ field.value|default:'' }}"
+                           class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-600"
+                           {% if field.field.required %}required{% endif %}>
+                {% endif %}
+
+                {% if field.help_text and field.field.widget.input_type != 'checkbox' %}
+                <p class="text-xs text-slate-500">{{ field.help_text }}</p>
+                {% endif %}
+
+                {% if field.errors %}
+                <ul class="text-xs text-red-500 space-y-1">
+                    {% for error in field.errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="pt-6 flex items-center justify-end gap-4 border-t border-slate-800">
+                <a href="{% url 'custom_admin:transaction_list' %}" class="px-6 py-2.5 rounded-lg border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 font-medium transition-all">
+                    Cancel
+                </a>
+                <button type="submit" class="bg-primary hover:bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold shadow-neon hover:shadow-neon-bright transition-all">
+                    {% if form.instance.pk %}Update Transaction{% else %}Create Transaction{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

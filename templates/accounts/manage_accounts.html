@@ -1,100 +1,243 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="account-management" style="max-width: 900px; margin: 0 auto; padding: 2rem;">
-    <div class="header flex-between mb-4">
-        <h1>Manage Accounts</h1>
-        <a href="{% url 'create_account' %}" class="btn btn-primary">+ Create New Account</a>
-    </div>
-
-    {% if messages %}
-    <div class="messages mb-4">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-    </div>
-    {% endif %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div class="space-y-2">
+            <h1 class="text-3xl font-bold text-white tracking-tight">Manage Accounts</h1>
+            <p class="text-slate-400 max-w-md">Overview of your financial accounts and shared access.</p>
+        </div>
+        <a href="{% url 'create_account' %}" class="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-xl neon-glow flex items-center gap-2 transition-all active:scale-95 whitespace-nowrap">
+            <span class="material-icons-round text-[20px]">add</span>
+            Add Account
+        </a>
+    </header>
 
     <!-- Owned Accounts -->
-    <div class="card mb-4">
-        <h3>My Accounts</h3>
-        <div class="table-container">
-            {% if owned_accounts %}
-            <table class="transaction-table">
-                <thead>
-                    <tr>
-                        <th>Account Name</th>
-                        <th>Balance</th>
-                        <th class="text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for account in owned_accounts %}
-                    <tr>
-                        <td>
-                            <a href="{% url 'dashboard' %}?account={{ account.id }}"
-                                style="text-decoration: none; font-weight: bold; color: var(--primary-900);">
-                                {{ account.name }}
-                            </a>
-                            <br>
-                            <small class="text-muted">{{ account.account_number|default:"" }}</small>
-                        </td>
-                        <td>₹{{ account.balance }}</td>
-                        <td class="text-right">
-                            <!-- <a href="{% url 'dashboard' %}?account={{ account.id }}"
-                                class="btn btn-sm btn-outline-secondary">Select</a> -->
-                            <a href="{% url 'update_account' account.id %}"
-                                class="btn btn-sm btn-outline-primary">Rename</a>
-                            <a href="{% url 'share_account' account.id %}"
-                                class="btn btn-sm btn-outline-primary">Share</a>
-                            <a href="{% url 'delete_account' account.id %}" class="btn btn-sm btn-danger">Delete</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <p class="text-muted text-center p-4">You haven't created any accounts yet.</p>
-            {% endif %}
+    <div class="mb-12">
+        <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+            <span class="material-icons-round text-primary">account_balance_wallet</span>
+            My Accounts
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for account in owned_accounts %}
+            <div class="glass-card rounded-xl p-6 border {% if account.is_active %}border-slate-800 hover:border-primary/50{% else %}border-red-500/20 bg-red-500/5{% endif %} transition-all group relative">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-12 h-12 rounded-full {% if account.is_active %}bg-primary/10 text-primary{% else %}bg-red-500/10 text-red-500{% endif %} flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <span class="material-icons-round">{% if account.is_active %}account_balance{% else %}lock{% endif %}</span>
+                    </div>
+                    
+                    {% if account.is_active %}
+                    <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <a href="{% url 'update_account' account.pk %}" class="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white" title="Edit">
+                            <span class="material-icons-round text-sm">edit</span>
+                        </a>
+                        <a href="{% url 'share_account' account.pk %}" class="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white" title="Share Access">
+                            <span class="material-icons-round text-sm">share</span>
+                        </a>
+                        <a href="{% url 'delete_account' account.pk %}" class="p-2 hover:bg-red-500/20 hover:text-red-500 rounded-lg text-slate-400 transition-colors" title="Delete">
+                            <span class="material-icons-round text-sm">delete</span>
+                        </a>
+                        <button type="button" onclick="openStatementModal('{{ account.pk }}')" class="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white" title="Download Statement">
+                            <span class="material-icons-round text-sm">picture_as_pdf</span>
+                        </button>
+                    </div>
+                    {% else %}
+                    <div class="px-2 py-1 bg-red-500/20 text-red-400 text-[10px] font-bold uppercase rounded border border-red-500/20">Frozen</div>
+                    {% endif %}
+                </div>
+                
+                <h3 class="text-xl font-bold {% if account.is_active %}text-white{% else %}text-slate-400{% endif %} mb-1">{{ account.name }}</h3>
+                <p class="text-slate-400 text-sm mb-6">{{ account.account_number|default:"•••• •••• ••••" }}</p>
+                
+                <div class="flex justify-between items-end">
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Balance</p>
+                        <p class="text-2xl font-bold {% if account.is_active %}text-white{% else %}text-slate-500{% endif %}">₹{{ account.balance|floatformat:2 }}</p>
+                    </div>
+                    {% if account.monthly_budget > 0 %}
+                    <div class="text-right">
+                        <p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Budget</p>
+                        <p class="text-sm font-semibold {% if account.is_active %}text-slate-300{% else %}text-slate-600{% endif %}">₹{{ account.monthly_budget|floatformat:0 }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if not account.is_active %}
+                <div class="absolute inset-0 z-10 cursor-not-allowed" title="Account Frozen - Upgrade to unlock"></div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-12 text-slate-500 bg-slate-900/30 rounded-xl border border-dashed border-slate-800">
+                <p>No accounts found. Create one to get started.</p>
+            </div>
+            {% endfor %}
         </div>
     </div>
 
     <!-- Shared Accounts -->
     {% if shared_accounts %}
-    <div class="card">
-        <h3>Shared with Me</h3>
-        <div class="table-container">
-            <table class="transaction-table">
-                <thead>
-                    <tr>
-                        <th>Account Name</th>
-                        <th>Owner</th>
-                        <th>Balance</th>
-                        <th class="text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for account in shared_accounts %}
-                    <tr>
-                        <td>
-                            <strong style="color: var(--primary-900);">{{ account.name }}</strong>
-                        </td>
-                        <td>{{ account.user.username }}</td>
-                        <td>₹{{ account.balance }}</td>
-                        <td class="text-right">
-                            <a href="{% url 'dashboard' %}?account={{ account.id }}"
-                                class="btn btn-sm btn-outline-secondary">Select</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <div>
+        <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+            <span class="material-icons-round text-purple-500">group</span>
+            Shared With Me
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for account in shared_accounts %}
+            <div class="glass-card rounded-xl p-6 border border-slate-800 hover:border-purple-500/50 transition-all group">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500">
+                            <span class="material-icons-round">lock_person</span>
+                        </div>
+                        <div>
+                            <span class="block px-2 py-0.5 rounded bg-slate-800 text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1 w-fit">
+                                Shared by {{ account.user.username }}
+                            </span>
+                        </div>
+                    </div>
+                    <button type="button" onclick="openStatementModal('{{ account.pk }}')" class="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors" title="Download Statement">
+                        <span class="material-icons-round text-sm">picture_as_pdf</span>
+                    </button>
+                </div>
+                
+                <h3 class="text-xl font-bold text-white mb-1">{{ account.name }}</h3>
+                <p class="text-slate-400 text-sm mb-6">{{ account.account_number|default:"Shared Account" }}</p>
+                
+                <div class="flex justify-between items-end">
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Current Balance</p>
+                        <p class="text-2xl font-bold text-white">₹{{ account.balance|floatformat:2 }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
     </div>
     {% endif %}
+</div>
 
-    <div class="mt-4">
-        <a href="{% url 'dashboard' %}" class="text-muted">&larr; Back to Dashboard</a>
+<!-- Statement Modal -->
+<div id="statementModal" class="fixed inset-0 z-50 hidden">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity" onclick="closeStatementModal()"></div>
+    
+    <!-- Modal Content -->
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-white">Download Statement</h3>
+                <button onclick="closeStatementModal()" class="text-slate-400 hover:text-white transition-colors">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            
+            <form id="statementForm" class="p-6 space-y-4" onsubmit="event.preventDefault(); downloadStatement();">
+                <input type="hidden" id="selectedAccountId">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-slate-400">Start Date</label>
+                        <input type="date" name="start_date" id="startDate" required 
+                               class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-slate-400">End Date</label>
+                        <input type="date" name="end_date" id="endDate" required 
+                               class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all">
+                    </div>
+                </div>
+                
+                <div class="pt-4 flex justify-end gap-3">
+                    <button type="button" onclick="closeStatementModal()" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-all font-medium text-sm">
+                        Cancel
+                    </button>
+                    <button type="button" onclick="downloadStatement()" class="px-6 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white font-bold shadow-lg shadow-primary/25 transition-all text-sm flex items-center gap-2">
+                        <span class="material-icons-round text-sm">download</span>
+                        Download PDF
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+<script>
+    function openStatementModal(accountId) {
+        console.log("Opening modal for account:", accountId);
+        if (!accountId) {
+            alert("Error: No account ID found.");
+            return;
+        }
+
+        const modal = document.getElementById('statementModal');
+        const hiddenInput = document.getElementById('selectedAccountId');
+        
+        // Store account ID
+        if (hiddenInput) {
+            hiddenInput.value = accountId;
+        } else {
+            console.error("Hidden input not found!");
+            return;
+        }
+        
+        // Set default dates (current month)
+        try {
+            const date = new Date();
+            const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+            const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+            
+            const formatDate = (d) => {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+            
+            const startInput = document.getElementById('startDate');
+            const endInput = document.getElementById('endDate');
+            
+            if (startInput) startInput.value = formatDate(firstDay);
+            if (endInput) endInput.value = formatDate(lastDay);
+        } catch (e) {
+            console.error("Error setting dates:", e);
+        }
+        
+        modal.classList.remove('hidden');
+    }
+
+    function closeStatementModal() {
+        document.getElementById('statementModal').classList.add('hidden');
+        // Clear inputs?
+    }
+
+    function downloadStatement() {
+        console.log("Download triggered");
+        const accountId = document.getElementById('selectedAccountId').value;
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+
+        if (!accountId) {
+            alert("Error: Account ID missing.");
+            return;
+        }
+        if (!startDate || !endDate) {
+            alert("Please select both dates.");
+            return;
+        }
+
+        // Hardcoded path to avoid Django template tag issues in JS
+        // Pattern: accounts/<int:pk>/statement/pdf/
+        const finalUrl = `/accounts/${accountId}/statement/pdf/?start_date=${startDate}&end_date=${endDate}`;
+        
+        console.log("Navigating to:", finalUrl);
+        
+        // Open in new tab to prevent disrupting current page
+        window.open(finalUrl, '_blank');
+        
+        // Close modal
+        closeStatementModal();
+    }
+</script>
 {% endblock %}

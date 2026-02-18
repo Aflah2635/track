@@ -216,15 +216,19 @@ def run_discord_bot():
     maintenance_group = app_commands.Group(name="maintenance", description="Maintenance control commands")
 
     @maintenance_group.command(name="on", description="Enable maintenance mode")
-    async def maintenance_on(interaction: discord.Interaction):
+    @app_commands.describe(duration="Expected duration (e.g. '2 hours', '15 mins')")
+    async def maintenance_on(interaction: discord.Interaction, duration: str = None):
         if not check_permissions(interaction, ADMIN_ROLE_ID):
             await interaction.response.send_message("❌ **Access Denied**: You do not have permission to execute this command.", ephemeral=True)
             return 
-# ... (rest of file is same logic, just indentation fix if needed, but I'll replace the block to be safe)
 
         # Wrap synchronous DB call
-        await sync_to_async(MaintenanceState.set_state)(True, user_id=interaction.user.id)
-        await interaction.response.send_message("✅ **Maintenance mode ENABLED**", ephemeral=True)
+        await sync_to_async(MaintenanceState.set_state)(True, user_id=interaction.user.id, duration=duration)
+        
+        msg = "✅ **Maintenance mode ENABLED**"
+        if duration:
+            msg += f"\nExpected Duration: {duration}"
+        await interaction.response.send_message(msg, ephemeral=True)
 
     @maintenance_group.command(name="off", description="Disable maintenance mode")
     async def maintenance_off(interaction: discord.Interaction):

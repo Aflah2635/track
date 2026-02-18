@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto relative z-0">
+    <header class="mb-8">
+        <h1 class="text-3xl font-bold text-white mb-2 tracking-tight">Account Settings</h1>
+        <p class="text-slate-400">Manage your profile information and account preferences.</p>
+    </header>
+
+    <div class="glass-card rounded-xl p-8 shadow-2xl">
+        <!-- Profile Section -->
+        <div class="mb-12">
+            <h2 class="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+                <span class="material-icons text-primary">badge</span>
+                Public Profile
+            </h2>
+
+            <div class="flex items-center gap-8 mb-10">
+                <div class="relative group">
+                    <div class="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-primary to-blue-400 shadow-neon">
+                        <div class="w-full h-full rounded-full border-4 border-slate-900 overflow-hidden bg-slate-800 flex items-center justify-center">
+                            {% if user.profile.avatar %}
+                                <img src="{{ user.profile.avatar.url }}" alt="Avatar" class="w-full h-full object-cover">
+                            {% else %}
+                                <span class="material-icons text-4xl text-slate-400">person</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <h3 class="text-sm font-medium text-slate-400">Profile Picture</h3>
+                     <div class="flex gap-3">
+                        <button class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium rounded transition-colors border border-slate-700">
+                            Upload New
+                        </button>
+                        <button class="px-4 py-2 text-slate-400 hover:text-white text-sm font-medium transition-colors">
+                            Remove
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-500">JPG, GIF or PNG. Max size of 800K</p>
+                </div>
+            </div>
+
+            <form method="post" action="{% url 'profile_update' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                 {% if profile_form.errors %}
+                <div class="bg-red-500/10 border border-red-500/50 text-red-500 text-sm p-3 rounded-lg mb-4">
+                    {{ profile_form.errors }}
+                </div>
+                {% endif %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Setup generic rendering or manual fields if form structure known -->
+                    {% for field in profile_form %}
+                    <div class="space-y-2 {% if field.name == 'bio' %}md:col-span-2{% endif %}">
+                        <label class="text-sm font-medium text-slate-400 ml-1" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {% if field.name == 'bio' %}
+                            <textarea class="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder-slate-600" 
+                                      id="{{ field.id_for_label }}" name="{{ field.name }}" rows="3">{{ field.value|default:'' }}</textarea>
+                        {% else %}
+                             <input class="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder-slate-600" 
+                                    id="{{ field.id_for_label }}" name="{{ field.name }}" 
+                                    type="{% if 'email' in field.name %}email{% else %}text{% endif %}" 
+                                    value="{{ field.value|default:'' }}">
+                        {% endif %}
+                         {% if field.help_text %}
+                        <p class="text-[10px] text-slate-500">{{ field.help_text }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Action Bar -->
+                <div class="pt-8 border-t border-slate-800 flex justify-end mt-8">
+                    <button type="submit" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg neon-glow transition-all flex items-center gap-2">
+                        <span>Save Changes</span>
+                        <span class="material-icons text-sm">done</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Danger Zone Section -->
+        <div class="mt-16 p-6 rounded-xl border border-rose-500/20 bg-rose-500/5">
+            <div class="flex items-start justify-between">
+                <div class="space-y-1">
+                    <h2 class="text-lg font-bold text-rose-500 flex items-center gap-2">
+                        <span class="material-icons text-rose-500">report_problem</span>
+                        Danger Zone
+                    </h2>
+                    <p class="text-slate-400 text-sm max-w-md">Once you delete your account, there is no going back. All your data will be permanently removed from our servers.</p>
+                </div>
+                <button class="px-6 py-2.5 border border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white font-semibold rounded transition-all">
+                    Delete Account
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

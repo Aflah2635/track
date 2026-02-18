@@ -1,37 +1,91 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h4>{% if form.instance.pk %}Edit Category{% else %}Add Category{% endif %}</h4>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        {% for field in form %}
-                        <div class="mb-3">
-                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.help_text %}
-                            <div class="form-text">{{ field.help_text }}</div>
-                            {% endif %}
-                            {% for error in field.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-                        {% endfor %}
+<div class="min-h-[80vh] flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-lg p-8 rounded-2xl shadow-2xl relative overflow-hidden">
+        <!-- Glow Effect -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-primary/20 rounded-full blur-[60px] pointer-events-none"></div>
 
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'category_list' %}" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-success">Save</button>
-                        </div>
-                    </form>
+        <h2 class="text-2xl font-bold text-white mb-8 text-center relative z-10">
+            {% if form.instance.pk %}Edit Category{% else %}Add Category{% endif %}
+        </h2>
+
+        <form method="post" class="space-y-6 relative z-10">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div class="space-y-2">
+                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-300">
+                    {{ field.label }}
+                </label>
+                
+                {% if field.name == 'color' %}
+                <div class="flex items-center gap-4">
+                    <input type="color" name="{{ field.name }}" id="{{ field.id_for_label }}" 
+                           value="{{ field.value|default:'#3b82f6' }}"
+                           class="w-12 h-12 rounded-xl cursor-pointer border-0 p-1 bg-slate-800 focus:ring-2 focus:ring-primary/50 transition-all">
+                    <span class="text-slate-400 text-sm">Pick a color for the category tag</span>
                 </div>
+                {% elif field.name == 'account' %}
+                 <div class="relative">
+                    {{ field }}
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                        <span class="material-icons-round text-xl">expand_more</span>
+                    </div>
+                </div>
+                {% else %}
+                {{ field }}
+                {% endif %}
+
+                {% if field.help_text %}
+                <p class="text-xs text-slate-500">{{ field.help_text }}</p>
+                {% endif %}
+                
+                {% if field.errors %}
+                <div class="text-red-500 text-sm mt-1">
+                    {{ field.errors.0 }}
+                </div>
+                {% endif %}
             </div>
-        </div>
+            {% endfor %}
+
+            <div class="flex items-center gap-4 pt-4">
+                <button type="submit" class="flex-1 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold shadow-lg shadow-primary/25 transition-all active:scale-[0.98]">
+                    Save Category
+                </button>
+                <a href="{% url 'category_list' %}" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl font-medium transition-all text-center">
+                    Cancel
+                </a>
+            </div>
+        </form>
     </div>
 </div>
+
+<style>
+    /* Form Input Styles */
+    input[type="text"],
+    input[type="number"],
+    select {
+        width: 100%;
+        background-color: rgba(30, 41, 59, 0.5); /* bg-slate-800/50 */
+        border: 1px solid rgba(51, 65, 85, 1); /* border-slate-700 */
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 0.75rem; /* rounded-xl */
+        outline: none;
+        transition: all 0.2s;
+        appearance: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    select {
+        background-image: none; /* Remove default arrow */
+    }
+</style>
 {% endblock %}

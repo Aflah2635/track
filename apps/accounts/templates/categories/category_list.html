@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header Section -->
+    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div class="space-y-2">
+            <h1 class="text-3xl font-bold text-white tracking-tight">Manage Categories</h1>
+            <p class="text-slate-400 max-w-md">Customize your tracking categories for better expense insights.</p>
+        </div>
+        <a href="{% url 'category_add' %}" class="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-xl neon-glow flex items-center gap-2 transition-all active:scale-95 whitespace-nowrap">
+            <span class="material-icons-round text-[20px]">add</span>
+            Add Category
+        </a>
+    </header>
+
+    <!-- Navigation (Optional Filter) -->
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-6 mb-8">
+        <div class="bg-slate-900/80 p-1 rounded-xl flex border border-slate-800">
+            <button class="px-6 py-2 rounded-lg bg-primary text-white font-semibold text-sm transition-all">
+                All Categories
+            </button>
+            <!-- Pending: Backend filtering implementation -->
+        </div>
+        <div class="flex items-center gap-4 text-sm text-slate-400">
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span> {{ categories.count }} Active</span>
+        </div>
+    </div>
+
+    <!-- Category Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {% for category in categories %}
+        <div class="group category-card glass-card rounded-xl p-8 flex flex-col items-center justify-center relative hover:border-primary/50 transition-all duration-300 hover:-translate-y-1">
+            <div class="actions absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <a href="{% url 'category_edit' category.pk %}" class="p-2 rounded-lg bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
+                    <span class="material-icons-round text-sm">edit</span>
+                </a>
+                <a href="{% url 'category_delete' category.pk %}" class="p-2 rounded-lg bg-slate-800/80 text-slate-400 hover:text-red-400 hover:bg-slate-700 transition-colors">
+                    <span class="material-icons-round text-sm">delete</span>
+                </a>
+            </div>
+            
+            <div class="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 relative overflow-hidden" style="background-color: {{ category.color }}15;">
+                <div class="absolute inset-0 blur-xl rounded-full" style="background-color: {{ category.color }}20;"></div>
+                <!-- Basic icon mapping based on name or default -->
+                <span class="material-icons-round text-4xl relative" style="color: {{ category.color }}; filter: drop-shadow(0 0 8px {{ category.color }}40);">
+                    {% if 'food' in category.name|lower %}restaurant
+                    {% elif 'transport' in category.name|lower %}directions_car
+                    {% elif 'home' in category.name|lower or 'hous' in category.name|lower %}home
+                    {% elif 'shopping' in category.name|lower %}shopping_bag
+                    {% elif 'entertainment' in category.name|lower %}movie
+                    {% elif 'health' in category.name|lower %}medical_services
+                    {% elif 'util' in category.name|lower %}bolt
+                    {% elif 'travel' in category.name|lower %}flight_takeoff
+                    {% else %}category{% endif %}
+                </span>
+            </div>
+            
+            <h3 class="text-xl font-bold text-slate-50 text-center">{{ category.name }}</h3>
+            
+            {% if category.limit > 0 %}
+            <div class="w-full mt-4">
+                <div class="flex justify-between text-[10px] text-slate-500 mb-1 uppercase tracking-widest font-semibold">
+                    <span>Budget</span>
+                    <span>{{ category.percent }}%</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-500" 
+                         style="width: {{ category.percent }}%; background-color: {{ category.color }}"></div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12 text-slate-500">
+            <span class="material-icons-round text-4xl mb-2 opacity-50">category</span>
+            <p>No categories found. Create one to get started!</p>
+        </div>
+        {% endfor %}
+        
+        <!-- Quick Add Card -->
+        <a href="{% url 'category_add' %}" class="group border-2 border-dashed border-slate-800 bg-slate-900/20 rounded-xl p-8 flex flex-col items-center justify-center hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer">
+            <div class="w-12 h-12 rounded-full border border-slate-700 flex items-center justify-center text-slate-600 group-hover:text-primary group-hover:border-primary transition-colors mb-2">
+                <span class="material-icons-round">add</span>
+            </div>
+            <span class="text-sm text-slate-500 group-hover:text-primary font-medium">New Category</span>
+        </a>
+    </div>
+</div>
+{% endblock %}

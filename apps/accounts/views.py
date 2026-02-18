@@ -14,17 +14,35 @@ class AccountCreateView(LoginRequiredMixin, CreateView):
     template_name = 'accounts/account_form.html'
     success_url = reverse_lazy('dashboard')
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def form_valid(self, form):
+        # Check subscription limits
+        user = self.request.user
+        if hasattr(user, 'subscription'):
+            plan = user.subscription.plan
+            if plan.max_accounts is not None:
+                current_count = Account.objects.filter(user=user).count()
+                if current_count >= plan.max_accounts:
+                    messages.error(self.request, f"Your {plan.name} plan is limited to {plan.max_accounts} account(s). Upgrade to create more.")
+                    return redirect('pricing')
+
         form.instance.user = self.request.user
         messages.success(self.request, f"Account '{form.instance.name}' created successfully!")
         return super().form_valid(form)
 
+from apps.subscriptions.decorators import plan_required
+
 @login_required
+@plan_required('allow_shared_accounts')
 def share_account(request, pk):
     account = get_object_or_404(Account, pk=pk, user=request.user)
     
     if request.method == 'POST':
-        form = AccountShareForm(request.POST)
+        form = AccountShareForm(request.POST, user=request.user)
         if form.is_valid():
             email = form.cleaned_data['email']
             level = form.cleaned_data['level']
@@ -46,7 +64,7 @@ def share_account(request, pk):
             except User.DoesNotExist:
                 messages.error(request, "User with this email does not exist.")
     else:
-        form = AccountShareForm()
+        form = AccountShareForm(user=request.user)
     
     # Get current shared users
     shared_users = account.shared_users.select_related('user').all()
@@ -111,6 +129,21 @@ class AccountDeleteView(LoginRequiredMixin, DeleteView):
         return Account.objects.filter(user=self.request.user)
     
     def delete(self, request, *args, **kwargs):
+        account = self.get_object()
+        from apps.audit.utils import log_to_discord, LogEvents, LogColors
+        
+        log_to_discord(
+            LogEvents.ACCOUNT_DELETED,
+            "Account Deleted",
+            request.user,
+            {
+                "Account": account.name,
+                "Balance": str(account.balance),
+                "Reason": "User Request"
+            },
+            LogColors.ERROR,
+            "🗑️"
+        )
         messages.success(self.request, "Account deleted successfully.")
         return super().delete(request, *args, **kwargs)
 
@@ -192,6 +225,7 @@ class CategoryCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
+        messages.success(self.request, f"Category '{form.instance.name}' created.")
         return super().form_valid(form)
 
 class CategoryUpdateView(LoginRequiredMixin, UpdateView):
@@ -208,6 +242,10 @@ class CategoryUpdateView(LoginRequiredMixin, UpdateView):
     def get_queryset(self):
         return Category.objects.filter(user=self.request.user)
 
+    def form_valid(self, form):
+        messages.success(self.request, f"Category '{form.instance.name}' updated.")
+        return super().form_valid(form)
+
 class CategoryDeleteView(LoginRequiredMixin, DeleteView):
     model = Category
     template_name = 'categories/category_confirm_delete.html'
@@ -215,3 +253,34 @@ class CategoryDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_queryset(self):
         return Category.objects.filter(user=self.request.user)
+    
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, "Category deleted successfully.")
+        return super().delete(request, *args, **kwargs)
+
+@login_required
+def switch_account(request, pk):
+    """
+    Switch the active account for the dashboard.
+    Verifies that the user has access to the account before switching.
+    """
+    if request.method == 'POST':
+        # Check if owned
+        is_owned = Account.objects.filter(id=pk, user=request.user).exists()
+        
+        # Check if shared
+        is_shared = AccountAccess.objects.filter(account_id=pk, user=request.user).exists()
+        
+        if is_owned or is_shared:
+            # Check if account is active (frozen check)
+            account = Account.objects.get(id=pk)
+            if not account.is_active:
+                messages.error(request, "This account is frozen due to subscription limits. Upgrade to unlock.")
+                return redirect('dashboard')
+
+            request.session['active_account_id'] = pk
+            messages.success(request, f"Switched account successfully.")
+        else:
+            messages.error(request, "You do not have access to this account.")
+            
+    return redirect('dashboard')

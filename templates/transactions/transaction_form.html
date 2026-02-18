@@ -1,131 +1,152 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="container" style="max-width: 600px; padding-top: 2rem;">
-    <div class="card">
-        <div class="mb-4">
-            <h2>New Transaction</h2>
-            <p class="text-muted">Record a credit, debit, loan, or debt</p>
+<div class="flex items-center justify-center min-h-[calc(100vh-140px)]">
+    <div class="w-full max-w-lg glass-card rounded-xl shadow-2xl overflow-hidden relative modal-enter">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-[60px] -mr-16 -mt-16 pointer-events-none"></div>
+
+        <!-- Header -->
+        <div class="px-8 pt-8 pb-4 flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-white tracking-tight">{% if object %}Edit Transaction{% else %}New Transaction{% endif %}</h1>
+            <a href="{% url 'dashboard' %}" class="text-slate-400 hover:text-white transition-colors">
+                <span class="material-icons-round">close</span>
+            </a>
         </div>
 
-        <form method="post">
+        <form method="post" class="px-8 pb-8 space-y-6">
             {% csrf_token %}
-            {% for field in form %}
-            <div class="form-group">
-                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                
-                {% if field.name == 'category' or field.name == 'account' or field.name == 'type' %}
-                    <!-- Custom Dropdown for ChoiceFields -->
-                    <div class="custom-form-dropdown" id="dropdown_{{ field.name }}" data-name="{{ field.name }}">
-                        <input type="hidden" name="{{ field.name }}" id="{{ field.id_for_label }}" value="{{ field.value|default:'' }}">
-                        <div class="dropdown-trigger" tabindex="0" role="combobox" aria-haspopup="listbox" aria-expanded="false">
-                            <span class="selected-text">
-                                {% if field.value %}
-                                    {% for choice_value, choice_label in field.field.choices %}
-                                        {% if choice_value|stringformat:"s" == field.value|stringformat:"s" %}
-                                            {{ choice_label }}
-                                        {% endif %}
-                                    {% endfor %}
-                                {% else %}
-                                    Select {{ field.label }}
-                                {% endif %}
-                            </span>
-                            <svg class="dropdown-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
+            {% if form.errors %}
+            <div class="bg-red-500/10 border border-red-500/50 text-red-500 text-sm p-3 rounded-lg">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div class="space-y-4">
+                <!-- Transaction Type Toggle -->
+                <!-- Transaction Type Toggle -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 p-1 bg-slate-900/50 rounded-lg border border-slate-800">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="type" value="DEBIT" class="peer sr-only" {% if form.type.value == 'DEBIT' or not form.type.value %}checked{% endif %}>
+                        <div id="type-debit" class="text-center py-2 rounded-md text-sm font-bold text-slate-400 transition-all hover:bg-slate-800 peer-checked:bg-rose-500/20 peer-checked:text-rose-500 peer-checked:border peer-checked:border-rose-500/50">
+                            Expense
                         </div>
-                        <div class="dropdown-menu" role="listbox">
-                            {% for choice_value, choice_label in field.field.choices %}
-                                {% if choice_value %}
-                                <div class="dropdown-item {% if field.value|stringformat:'s' == choice_value|stringformat:'s' %}active{% endif %}" data-value="{{ choice_value }}" role="option">
-                                    {{ choice_label }}
-                                </div>
-                                {% endif %}
-                            {% endfor %}
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="type" value="CREDIT" class="peer sr-only" {% if form.type.value == 'CREDIT' %}checked{% endif %}>
+                        <div id="type-credit" class="text-center py-2 rounded-md text-sm font-bold text-slate-400 transition-all hover:bg-slate-800 peer-checked:bg-emerald-500/20 peer-checked:text-emerald-500 peer-checked:border peer-checked:border-emerald-500/50">
+                            Income
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="type" value="LEND" class="peer sr-only" {% if form.type.value == 'LEND' %}checked{% endif %}>
+                        <div id="type-lend" class="text-center py-2 rounded-md text-sm font-bold text-slate-400 transition-all hover:bg-slate-800 peer-checked:bg-amber-500/20 peer-checked:text-amber-500 peer-checked:border peer-checked:border-amber-500/50">
+                            Lend
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="type" value="BORROW" class="peer sr-only" {% if form.type.value == 'BORROW' %}checked{% endif %}>
+                        <div id="type-borrow" class="text-center py-2 rounded-md text-sm font-bold text-slate-400 transition-all hover:bg-slate-800 peer-checked:bg-blue-500/20 peer-checked:text-blue-500 peer-checked:border peer-checked:border-blue-500/50">
+                            Borrow
+                        </div>
+                    </label>
+                </div>
+                
+                <!-- Amount -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-400 ml-1">Amount</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-lg font-bold">₹</span>
+                        <input type="number" step="0.01" name="amount" class="w-full bg-slate-900/40 border border-slate-800 rounded-lg pl-8 pr-4 py-3 text-white text-lg font-bold focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all outline-none placeholder-slate-600" placeholder="0.00" value="{{ form.amount.value|default:'' }}" required>
+                    </div>
+                </div>
+
+                <!-- Title -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-400 ml-1">Title</label>
+                    <input type="text" name="title" class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all outline-none placeholder-slate-600" placeholder="e.g. Grocery Shopping" value="{{ form.title.value|default:'' }}" required>
+                </div>
+
+                <!-- Helper Script for Conditional Fields -->
+                <script>
+                    function updateFormFields(type) {
+                        const counterpartyField = document.getElementById('field-counterparty');
+                        if (['LEND', 'BORROW'].includes(type)) {
+                            counterpartyField.classList.remove('hidden');
+                        } else {
+                            counterpartyField.classList.add('hidden');
+                        }
+                    }
+                    
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const checkedType = document.querySelector('input[name="type"]:checked');
+                        if (checkedType) {
+                            updateFormFields(checkedType.value);
+                        }
+                        
+                        document.querySelectorAll('input[name="type"]').forEach(radio => {
+                            radio.addEventListener('change', (e) => {
+                                updateFormFields(e.target.value);
+                            });
+                        });
+                    });
+                </script>
+
+                 <!-- Counterparty (Conditional) -->
+                <div id="field-counterparty" class="space-y-2 hidden transition-all">
+                    <label class="block text-sm font-medium text-slate-400 ml-1">Counterparty (Person)</label>
+                    <input type="text" name="counterparty" class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all outline-none placeholder-slate-600" placeholder="Who is this with?" value="{{ form.counterparty.value|default:'' }}">
+                </div>
+
+                <!-- Description (Optional) -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-400 ml-1">Description (Optional)</label>
+                    <textarea name="description" rows="2" class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all outline-none placeholder-slate-600" placeholder="Add notes...">{{ form.description.value|default:'' }}</textarea>
+                </div>
+
+                <!-- Category & Account Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Category -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-slate-400 ml-1">Category</label>
+                        <div class="relative">
+                            <select name="category" class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all outline-none appearance-none">
+                                {% for choice in form.category.field.queryset %}
+                                    <option value="{{ choice.id }}" {% if form.category.value|stringformat:"s" == choice.id|stringformat:"s" %}selected{% endif %}>{{ choice.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <span class="material-icons-round absolute right-3 top-3 text-slate-500 pointer-events-none">expand_more</span>
                         </div>
                     </div>
-                {% else %}
-                    <!-- Normal Widget for other fields -->
-                    {{ field.as_widget }}
-                {% endif %}
 
-                {% if field.help_text %}
-                <small class="text-muted">{{ field.help_text }}</small>
-                {% endif %}
-                {% if field.errors %}
-                <div style="color: var(--danger); font-size: 0.875rem;">{{ field.errors }}</div>
-                {% endif %}
+                    <!-- Account -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-slate-400 ml-1">Account</label>
+                        <div class="relative">
+                            <select name="account" class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all outline-none appearance-none">
+                                {% for choice in form.account.field.queryset %}
+                                    <option value="{{ choice.id }}" {% if form.account.value|stringformat:"s" == choice.id|stringformat:"s" %}selected{% endif %}>{{ choice.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <span class="material-icons-round absolute right-3 top-3 text-slate-500 pointer-events-none">expand_more</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Date -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-400 ml-1">Date</label>
+                    <input type="date" name="timestamp" class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all outline-none [color-scheme:dark]" value="{{ form.timestamp.value|date:'Y-m-d' }}">
+                </div>
             </div>
-            {% endfor %}
 
-            <div class="actions mt-4" style="justify-content: flex-end;">
-                <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary">Save Transaction</button>
+            <!-- Submit -->
+            <div class="pt-4">
+                <button type="submit" class="w-full bg-primary hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl shadow-neon transition-all hover:translate-y-[-1px] active:translate-y-[1px]">
+                    {% if object %}Save Transaction{% else %}Add Transaction{% endif %}
+                </button>
             </div>
         </form>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const accountInput = document.getElementById('id_account');
-        // The category dropdown container
-        const categoryDropdown = document.getElementById('dropdown_category'); 
-        const categoryInput = document.getElementById('id_category');
-        const categoryMenu = categoryDropdown ? categoryDropdown.querySelector('.dropdown-menu') : null;
-        
-        const categoryMap = JSON.parse('{{ category_account_map|safe }}');
-        
-        // We need to rebuild the category options when account changes
-        if (accountInput && categoryMenu) {
-            
-            // Store original options content to restore from if needed, 
-            // OR iterate through the existing ones we just rendered.
-            // A better way for custom dropdowns: we can just hide/show items based on data attributes.
-            // Let's modify the items to have data-account-id if we can, or just look up map.
-            
-            // Actually, we can just clear and rebuild the HTML of the menu, but we need the labels.
-            // Let's parse the existing items into a JS array on load.
-            const allCategoryItems = Array.from(categoryMenu.querySelectorAll('.dropdown-item')).map(item => ({
-                value: item.dataset.value,
-                label: item.textContent.trim(),
-                element: item
-            }));
-
-            function filterCategories() {
-                const selectedAccount = accountInput.value;
-                
-                // Reset selected text if current selection is invalid? 
-                // For now, let's just filter the list.
-                
-                allCategoryItems.forEach(item => {
-                    const catId = parseInt(item.value);
-                    const catAccount = categoryMap[catId];
-                    
-                    // Show if global or matches selected account
-                    const isVisible = (catAccount === 'global' || catAccount == selectedAccount);
-                    item.element.style.display = isVisible ? 'flex' : 'none';
-                    
-                    // If hidden and currently selected, we might want to clear selection.
-                    if (!isVisible && categoryInput.value == item.value) {
-                         // clear
-                         categoryInput.value = '';
-                         const displayText = categoryDropdown.querySelector('.selected-text');
-                         if(displayText) displayText.textContent = 'Select Category';
-                         item.element.classList.remove('active');
-                    }
-                });
-            }
-
-            // Listen for changes on the account hidden input
-            // Our Dropdown class dispatches a 'change' event on the input.
-            accountInput.addEventListener('change', filterCategories);
-            
-            // Initial filter
-            filterCategories();
-        }
-    });
-</script>
 {% endblock %}

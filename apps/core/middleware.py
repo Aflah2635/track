@@ -12,13 +12,15 @@ class MaintenanceMiddleware:
         if MaintenanceState.is_active():
             # Allow access to admin, static, and media for superusers
             # Also allow if user is staff/superuser
+            media_url = getattr(settings, 'MEDIA_URL', None)
             if request.path.startswith(settings.STATIC_URL) or \
-               request.path.startswith(settings.MEDIA_URL) or \
+               (media_url and media_url != '/' and request.path.startswith(media_url)) or \
                request.path.startswith('/admin/') or \
                (request.user.is_authenticated and request.user.is_staff):
                 pass
             else:
-                return render(request, 'maintenance.html', status=503)
+                state = MaintenanceState.objects.first()
+                return render(request, 'maintenance.html', {'state': state}, status=503)
 
         response = self.get_response(request)
         return response

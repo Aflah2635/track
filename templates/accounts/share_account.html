@@ -1,84 +1,101 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="card" style="max-width: 600px; margin: 2rem auto;">
-    <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
-        <h2>Share Account: {{ account.name }}</h2>
-        <p class="text-muted">Allow other users to access this account.</p>
-    </div>
+<div class="flex items-center justify-center min-h-[calc(100vh-140px)]">
+    <div class="w-full max-w-lg glass-card rounded-xl shadow-2xl overflow-hidden relative">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-[60px] -mr-16 -mt-16 pointer-events-none"></div>
 
-    {% if messages %}
-    <div class="messages mb-4">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-    </div>
-    {% endif %}
+        <!-- Header -->
+        <div class="px-8 pt-8 pb-4">
+            <h1 class="text-2xl font-bold text-white tracking-tight mb-1">Share Account: {{ account.name }}</h1>
+            <p class="text-slate-400 text-sm">Allow other users to access this account.</p>
+        </div>
 
-    <form method="post" style="margin-bottom: 2rem;">
-        {% csrf_token %}
-        <div class="form-group mb-3">
-            <label for="{{ form.email.id_for_label }}" class="form-label">Enter Email</label>
-            {{ form.email }}
-            {% if form.email.errors %}
-            <div class="text-error">{{ form.email.errors }}</div>
+        <form method="post" class="px-8 pb-6 space-y-6">
+            {% csrf_token %}
+            {% if messages %}
+            <div class="space-y-2">
+                {% for message in messages %}
+                <div class="p-3 rounded-lg text-sm {% if message.tags == 'error' %}bg-red-500/10 text-red-500 border border-red-500/50{% else %}bg-green-500/10 text-green-500 border border-green-500/50{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="space-y-4">
+                <!-- Email Input -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-400 ml-1">User Email</label>
+                    <input type="email" name="email" class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all outline-none placeholder-slate-600" placeholder="friend@example.com" required>
+                    {% if form.email.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Permission Level -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-400 ml-1">Permission Level</label>
+                    <div class="relative">
+                        <select name="level" class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all outline-none appearance-none">
+                            {% for value, label in form.fields.level.choices %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <span class="material-icons-round absolute right-3 top-3 text-slate-500 pointer-events-none">expand_more</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-3 pt-2">
+                <button type="submit" class="flex-1 bg-primary hover:bg-blue-500 text-white font-bold py-3 rounded-xl shadow-neon transition-all hover:translate-y-[-1px] active:translate-y-[1px]">
+                    Share Access
+                </button>
+                <a href="{% url 'manage_accounts' %}" class="px-6 py-3 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors font-medium">
+                    Cancel
+                </a>
+            </div>
+        </form>
+
+        <!-- Shared Users List -->
+        <div class="bg-slate-900/50 border-t border-slate-800 p-8">
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">People with access</h3>
+            
+            {% if shared_users %}
+            <div class="space-y-3">
+                {% for access in shared_users %}
+                <div class="flex items-center justify-between p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-purple-500/20 text-purple-500 flex items-center justify-center font-bold text-xs">
+                            {{ access.user.username|slice:":2"|upper }}
+                        </div>
+                        <div>
+                            <p class="text-white font-medium text-sm">{{ access.user.username }}</p>
+                            <p class="text-slate-500 text-xs">{{ access.user.email }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="px-2 py-1 rounded bg-slate-900 border border-slate-700 text-xs font-medium text-slate-300">
+                            {{ access.get_level_display }}
+                        </span>
+                        <form action="{% url 'revoke_access' account.pk access.user.id %}" method="post" onclick="return confirm('Revoke access for {{ access.user.username }}?')">
+                            {% csrf_token %}
+                            <button type="submit" class="text-slate-400 hover:text-red-500 transition-colors p-1" title="Revoke Access">
+                                <span class="material-icons-round text-sm">close</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-6 border border-dashed border-slate-800 rounded-lg">
+                <p class="text-slate-500 text-sm">No one has access to this account yet.</p>
+            </div>
             {% endif %}
         </div>
-
-        <div class="form-group mb-3">
-            <label for="{{ form.level.id_for_label }}" class="form-label">Permission Level</label>
-            {{ form.level }}
-        </div>
-
-        <div class="actions">
-            <button type="submit" class="btn btn-primary">Share Account</button>
-            <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
-        </div>
-
-        <style>
-            .form-control,
-            select,
-            input {
-                width: 100%;
-                padding: 0.75rem;
-                border: 1px solid var(--border);
-                border-radius: var(--radius-md);
-                margin-top: 0.25rem;
-            }
-        </style>
-    </form>
-
-    <div class="shared-users">
-        <h3>people with access</h3>
-        {% if shared_users %}
-        <ul style="list-style: none; padding: 0; margin-top: 1rem;">
-            {% for access in shared_users %}
-            <li class="flex-between" style="padding: 1rem; border-bottom: 1px solid var(--border);">
-                <div>
-                    <strong>{{ access.user.username }}</strong>
-                    <br>
-                    <small class="text-muted">{{ access.user.email }}</small>
-                </div>
-                <div style="text-align: right;">
-                    <span class="badge" style="background: var(--surface-2); color: var(--text-main);">
-                        {{ access.get_level_display }}
-                    </span>
-                    <form action="{% url 'revoke_access' account.pk access.user.id %}" method="post" style="display: inline; margin-left: 10px;">
-                        {% csrf_token %}
-                        <button type="submit" 
-                                class="btn btn-danger" 
-                                style="font-size: 0.8rem; padding: 0.2rem 0.6rem; min-height: auto;"
-                                onclick="return confirm('Are you sure you want to revoke access for this user?')">
-                            Revoke
-                        </button>
-                    </form>
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p class="text-muted">This account has not been shared with anyone yet.</p>
-        {% endif %}
     </div>
 </div>
 {% endblock %}

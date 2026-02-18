@@ -1,0 +1,99 @@
+{% extends 'custom_admin/base.html' %}
+
+{% block title %}Transactions{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-white mb-2">Transactions</h1>
+            <p class="text-slate-400">Manage all system transactions.</p>
+        </div>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-950/50 border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider">
+                        <th class="p-6 font-semibold">Transaction</th>
+                        <th class="p-6 font-semibold">User</th>
+                        <th class="p-6 font-semibold">Amount</th>
+                        <th class="p-6 font-semibold">Date</th>
+                        <th class="p-6 font-semibold text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800">
+                    {% for transaction in transactions %}
+                    <tr class="hover:bg-slate-800/30 transition-colors group">
+                        <td class="p-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg flex items-center justify-center 
+                                    {% if transaction.type == 'CREDIT' %}bg-emerald-500/10 text-emerald-500
+                                    {% elif transaction.type == 'DEBIT' %}bg-red-500/10 text-red-500
+                                    {% else %}bg-blue-500/10 text-blue-500{% endif %}">
+                                    <span class="material-icons-round">
+                                        {% if transaction.type == 'CREDIT' %}arrow_downward
+                                        {% elif transaction.type == 'DEBIT' %}arrow_upward
+                                        {% else %}swap_horiz{% endif %}
+                                    </span>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-white">{{ transaction.description }}</p>
+                                    <p class="text-xs text-slate-500">{{ transaction.category.name|default:"Uncategorized" }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-6">
+                             <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-300">
+                                    {{ transaction.user.username|first|upper }}
+                                </div>
+                                <span class="text-slate-300 text-sm">{{ transaction.user.username }}</span>
+                            </div>
+                        </td>
+                        <td class="p-6 font-medium {% if transaction.type == 'CREDIT' %}text-emerald-500{% elif transaction.type == 'DEBIT' %}text-white{% else %}text-blue-500{% endif %}">
+                            {% if transaction.type == 'DEBIT' %}-{% elif transaction.type == 'CREDIT' %}+{% endif %}₹{{ transaction.amount }}
+                        </td>
+                        <td class="p-6 text-slate-400 text-sm">{{ transaction.date|date:"M d, Y" }}</td>
+                        <td class="p-6 text-right">
+                            <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <a href="{% url 'custom_admin:transaction_update' transaction.id %}" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-all" title="Edit">
+                                    <span class="material-icons-round text-lg">edit</span>
+                                </a>
+                                <a href="{% url 'custom_admin:transaction_delete' transaction.id %}" class="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-all" title="Delete">
+                                    <span class="material-icons-round text-lg">delete</span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="p-12 text-center text-slate-500">
+                            No transactions found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="p-6 border-t border-slate-800 flex items-center justify-between">
+            <div class="text-sm text-slate-500">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </div>
+            <div class="flex gap-2">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800 text-sm transition-all">Previous</a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800 text-sm transition-all">Next</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

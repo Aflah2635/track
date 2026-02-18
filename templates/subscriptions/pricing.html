@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Pricing - Track{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Header -->
+    <div class="text-center mb-16">
+        <h1 class="text-4xl font-bold text-white mb-4">Choose the right plan for you</h1>
+        <p class="text-slate-400 text-lg">Unlock advanced features to manage your finances better.</p>
+    </div>
+
+    <!-- Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+        {% for plan in plans %}
+        <!-- Card -->
+        <div class="relative bg-slate-900 border {% if plan.name == 'PRO' %}border-primary shadow-neon transform md:-translate-y-4 z-10{% elif user.subscription.plan == plan %}border-emerald-500/50{% else %}border-slate-800{% endif %} rounded-2xl p-8 flex flex-col transition-all hover:border-primary/50">
+            
+            {% if plan.name == 'PRO' %}
+            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-primary to-purple-600 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg uppercase tracking-wider">
+                Most Popular
+            </div>
+            {% endif %}
+
+            <h3 class="text-xl font-bold text-white mb-2">{{ plan.get_name_display }}</h3>
+            <div class="mb-6">
+                <span class="text-4xl font-bold text-white">₹{{ plan.price|intcomma }}</span>
+                <span class="text-slate-400">/month</span>
+            </div>
+
+            <p class="text-slate-400 text-sm mb-6 min-h-[40px]">
+                {% if plan.name == 'BASIC' %}Perfect for getting started.{% endif %}
+                {% if plan.name == 'PLUS' %}For power users who need more control.{% endif %}
+                {% if plan.name == 'PRO' %}Ultimate workspace for teams & pros.{% endif %}
+            </p>
+
+            <div class="mt-auto w-full">
+                {% if user.subscription.plan == plan %}
+                    <button type="button" disabled class="w-full py-3 px-4 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-bold cursor-not-allowed flex items-center justify-center gap-2">
+                        <span class="material-icons-round text-sm">check</span> Current Plan
+                    </button>
+                    {% if plan.name != 'BASIC' %}
+                     <button onclick="openContactModal('BASIC')" class="block w-full text-center mt-3 text-sm text-slate-500 hover:text-slate-300 underline">
+                        Downgrade to Basic
+                    </button>
+                    {% endif %}
+                {% else %}
+                    <button onclick="openContactModal('{{ plan.name }}')" class="w-full py-3 px-4 rounded-lg {% if plan.name == 'PRO' %}bg-primary hover:bg-blue-600 text-white shadow-neon{% else %}bg-slate-800 hover:bg-slate-700 text-white border border-slate-700{% endif %} font-bold transition-all">
+                        {% if plan.price == 0 %}Downgrade{% else %}Upgrade{% endif %}
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Comparison Table -->
+    <div class="max-w-5xl mx-auto">
+        <h2 class="text-2xl font-bold text-white mb-8 text-center">Compare Features</h2>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-slate-800 text-slate-400 text-sm uppercase tracking-wider">
+                        <th class="py-4 px-6 font-medium">Features</th>
+                        <th class="py-4 px-6 font-medium text-center">Basic</th>
+                        <th class="py-4 px-6 font-medium text-center text-primary">Plus</th>
+                        <th class="py-4 px-6 font-medium text-center text-purple-400">Pro</th>
+                    </tr>
+                </thead>
+                <tbody class="text-slate-300 divide-y divide-slate-800/50">
+                    <!-- Accounts -->
+                    <tr>
+                        <td class="py-4 px-6 font-medium">Max Accounts</td>
+                        <td class="py-4 px-6 text-center">1</td>
+                        <td class="py-4 px-6 text-center">5</td>
+                        <td class="py-4 px-6 text-center font-bold text-white">Unlimited</td>
+                    </tr>
+                    <!-- Shared Users -->
+                    <tr>
+                        <td class="py-4 px-6 font-medium">Shared Users</td>
+                        <td class="py-4 px-6 text-center">-</td>
+                        <td class="py-4 px-6 text-center">3</td>
+                        <td class="py-4 px-6 text-center font-bold text-white">Unlimited</td>
+                    </tr>
+                    <!-- PDF Exports -->
+                    <tr>
+                        <td class="py-4 px-6 font-medium">PDF Exports / mo</td>
+                        <td class="py-4 px-6 text-center">5</td>
+                        <td class="py-4 px-6 text-center">20</td>
+                        <td class="py-4 px-6 text-center font-bold text-white">Unlimited</td>
+                    </tr>
+                    <!-- CSV Export -->
+                    <tr>
+                        <td class="py-4 px-6 font-medium">CSV/Excel Export</td>
+                        <td class="py-4 px-6 text-center"><span class="material-icons-round text-slate-600 text-lg">close</span></td>
+                        <td class="py-4 px-6 text-center"><span class="material-icons-round text-emerald-500 text-lg">check</span></td>
+                        <td class="py-4 px-6 text-center"><span class="material-icons-round text-emerald-500 text-lg">check</span></td>
+                    </tr>
+                     <!-- Advanced Analytics -->
+                    <tr>
+                        <td class="py-4 px-6 font-medium">Advanced Analytics</td>
+                        <td class="py-4 px-6 text-center"><span class="material-icons-round text-slate-600 text-lg">close</span></td>
+                        <td class="py-4 px-6 text-center"><span class="material-icons-round text-emerald-500 text-lg">check</span></td>
+                        <td class="py-4 px-6 text-center"><span class="material-icons-round text-emerald-500 text-lg">check</span></td>
+                    </tr>
+                    <!-- Team Tools -->
+                    <tr>
+                        <td class="py-4 px-6 font-medium">Team Collaboration</td>
+                        <td class="py-4 px-6 text-center"><span class="material-icons-round text-slate-600 text-lg">close</span></td>
+                        <td class="py-4 px-6 text-center"><span class="material-icons-round text-slate-600 text-lg">close</span></td>
+                        <td class="py-4 px-6 text-center"><span class="material-icons-round text-emerald-500 text-lg">check</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Admin Modal -->
+<div id="contactModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity opacity-0">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl transform scale-95 transition-transform">
+        <div class="text-center">
+            <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span class="material-icons-round text-3xl text-primary">contact_support</span>
+            </div>
+            
+            <h3 class="text-2xl font-bold text-white mb-2">Upgrade to <span id="modalPlanName" class="text-primary">Plus</span></h3>
+            
+            <p class="text-slate-400 mb-8">
+                To upgrade your plan, please contact our support team. We'll handle the setup for you instantly.
+            </p>
+            
+            <div class="space-y-3">
+               <a href="https://discord.com/channels/@me/1330796505321439253" target="_blank" rel="noopener noreferrer" class="block w-full py-3 px-4 bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
+                    <span class="material-icons-round">discord</span> Contact on Discord
+               </a>
+               <a href="mailto:aflahruh26@gmail.com" class="block w-full py-3 px-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg transition-colors border border-slate-700">
+                    Contact via Email
+               </a>
+            </div>
+            
+            <button onclick="closeContactModal()" class="mt-6 text-slate-500 hover:text-white text-sm">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openContactModal(planName) {
+        document.getElementById('modalPlanName').innerText = planName;
+        const modal = document.getElementById('contactModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        // Small delay to allow display:block to apply before opacity transition
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            modal.querySelector('div').classList.remove('scale-95');
+            modal.querySelector('div').classList.add('scale-100');
+        }, 10);
+    }
+
+    function closeContactModal() {
+        const modal = document.getElementById('contactModal');
+        modal.classList.add('opacity-0');
+        modal.querySelector('div').classList.remove('scale-100');
+        modal.querySelector('div').classList.add('scale-95');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 300);
+    }
+    
+    // Close on click outside
+    document.getElementById('contactModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeContactModal();
+        }
+    });
+</script>
+{% endblock %}

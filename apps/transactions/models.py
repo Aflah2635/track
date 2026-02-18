@@ -42,3 +42,10 @@ class Transaction(models.Model):
         super().delete(*args, **kwargs)
         if account_id:
             cache.delete(f'dashboard_stats_{account_id}')
+    @property
+    def is_expense(self):
+        return self.type in ['DEBIT', 'LEND']
+
+    @property
+    def is_income(self):
+        return self.type in ['CREDIT', 'BORROW']

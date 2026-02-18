@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Admin - {% block title %}Dashboard{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round|Material+Icons" rel="stylesheet"/>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2d69e1",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#020617",
+                        "slate-950": "#020617",
+                        "slate-900": "#0f172a",
+                        "slate-800": "#1e293b",
+                        "slate-700": "#334155",
+                        "slate-card": "rgba(15, 23, 42, 0.4)",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    boxShadow: {
+                        "neon": "0 0 15px rgba(45, 105, 225, 0.4), 0 0 5px rgba(45, 105, 225, 0.2)",
+                    }
+                },
+            },
+        }
+    </script>
+    {% block extra_css %}{% endblock %}
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        
+        /* Staggered text reveal */
+        .stagger-1 { animation-delay: 50ms; }
+        .stagger-2 { animation-delay: 100ms; }
+        .stagger-3 { animation-delay: 150ms; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen selection:bg-primary selection:text-white">
+    
+    <div class="flex min-h-screen">
+        <!-- Admin Sidebar -->
+        <aside class="fixed inset-y-0 left-0 w-64 bg-slate-950 border-r border-slate-800 z-10 hidden lg:block animate-fade-in">
+            <div class="p-8">
+                <div class="flex items-center gap-2 mb-10">
+                    <div class="w-8 h-8 bg-red-500 rounded flex items-center justify-center shadow-neon">
+                        <span class="material-icons-round text-white text-lg">admin_panel_settings</span>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight text-white uppercase">Admin Panel</span>
+                </div>
+                <nav class="space-y-2">
+                    <a href="{% url 'custom_admin:dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'dashboard' %}bg-primary/10 text-primary border-r-2 border-primary{% else %}text-slate-400 hover:text-white hover:bg-slate-900{% endif %} transition-all">
+                        <span class="material-icons-round text-xl">dashboard</span>
+                        <span class="font-medium">Dashboard</span>
+                    </a>
+                    <a href="{% url 'custom_admin:user_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg {% if 'users' in request.path %}bg-primary/10 text-primary border-r-2 border-primary{% else %}text-slate-400 hover:text-white hover:bg-slate-900{% endif %} transition-all">
+                        <span class="material-icons-round text-xl">group</span>
+                        <span class="font-medium">Users</span>
+                    </a>
+
+                    
+                    <div class="pt-4 pb-2">
+                        <p class="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Management</p>
+                    </div>
+
+                    <a href="{% url 'custom_admin:account_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg {% if 'accounts' in request.path %}bg-primary/10 text-primary border-r-2 border-primary{% else %}text-slate-400 hover:text-white hover:bg-slate-900{% endif %} transition-all">
+                        <span class="material-icons-round text-xl">account_balance_wallet</span>
+                        <span class="font-medium">Accounts</span>
+                    </a>
+                    <a href="{% url 'custom_admin:category_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg {% if 'categories' in request.path %}bg-primary/10 text-primary border-r-2 border-primary{% else %}text-slate-400 hover:text-white hover:bg-slate-900{% endif %} transition-all">
+                        <span class="material-icons-round text-xl">category</span>
+                        <span class="font-medium">Categories</span>
+                    </a>
+                    <a href="{% url 'custom_admin:plan_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg {% if 'plans' in request.path %}bg-primary/10 text-primary border-r-2 border-primary{% else %}text-slate-400 hover:text-white hover:bg-slate-900{% endif %} transition-all">
+                        <span class="material-icons-round text-xl">card_membership</span>
+                        <span class="font-medium">Plans</span>
+                    </a>
+                    <a href="{% url 'custom_admin:user_subscription_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg {% if 'user-subscriptions' in request.path %}bg-primary/10 text-primary border-r-2 border-primary{% else %}text-slate-400 hover:text-white hover:bg-slate-900{% endif %} transition-all">
+                        <span class="material-icons-round text-xl">loyalty</span>
+                        <span class="font-medium">User Subscriptions</span>
+                    </a>
+
+                    <div class="pt-4 pb-2">
+                        <p class="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">System</p>
+                    </div>
+
+                    <a href="{% url 'custom_admin:notification_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg {% if 'notifications' in request.path %}bg-primary/10 text-primary border-r-2 border-primary{% else %}text-slate-400 hover:text-white hover:bg-slate-900{% endif %} transition-all">
+                        <span class="material-icons-round text-xl">notifications</span>
+                        <span class="font-medium">Notifications</span>
+                    </a>
+                    <a href="{% url 'custom_admin:system_control' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg {% if 'system' in request.path %}bg-primary/10 text-primary border-r-2 border-primary{% else %}text-slate-400 hover:text-white hover:bg-slate-900{% endif %} transition-all">
+                        <span class="material-icons-round text-xl">settings</span>
+                        <span class="font-medium">System Control</span>
+                    </a>
+                </nav>
+            </div>
+            
+            <div class="absolute bottom-0 left-0 w-full p-8 border-t border-slate-900">
+                <a href="{% url 'home' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 transition-all mb-2">
+                    <span class="material-icons-round text-xl">home</span>
+                    <span class="font-medium">Back to Site</span>
+                </a>
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="flex w-full items-center gap-3 px-4 py-3 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all">
+                        <span class="material-icons-round text-xl">logout</span>
+                        <span class="font-medium">Logout</span>
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="lg:ml-64 flex-1 p-6 lg:p-12 bg-slate-950 relative overflow-hidden min-h-screen w-full animate-fade-in delay-100">
+            {% if messages %}
+            <div class="mb-6 space-y-2 relative z-50">
+                {% for message in messages %}
+                <div class="p-4 rounded-lg border flex items-center gap-3 shadow-lg {% if message.tags == 'success' %}bg-emerald-500/10 border-emerald-500/20 text-emerald-500{% elif message.tags == 'error' %}bg-red-500/10 border-red-500/20 text-red-500{% else %}bg-slate-900 border-slate-800 text-white{% endif %}">
+                    <span class="material-icons-round">{% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% else %}info{% endif %}</span>
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

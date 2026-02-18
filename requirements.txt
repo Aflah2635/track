@@ -7,3 +7,4 @@ django-axes
 pip-audit
 django-ratelimit
 xhtml2pdf
+openpyxl

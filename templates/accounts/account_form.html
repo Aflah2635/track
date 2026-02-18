@@ -1,28 +1,72 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="container" style="max-width: 600px; padding-top: 2rem;">
-    <div class="card">
-        <div class="mb-4">
-            <h2>{% if form.instance.pk %}Edit Account{% else %}Add New Account{% endif %}</h2>
-            <p class="text-muted">Enter account details below</p>
+<div class="flex items-center justify-center min-h-[calc(100vh-140px)]">
+    <div class="w-full max-w-lg glass-card rounded-xl shadow-2xl overflow-hidden relative">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-[60px] -mr-16 -mt-16 pointer-events-none"></div>
+
+        <!-- Header -->
+        <div class="px-8 pt-8 pb-4 flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-white tracking-tight">{% if object %}Edit Account{% else %}New Account{% endif %}</h1>
+            <a href="{% url 'manage_accounts' %}" class="text-slate-400 hover:text-white transition-colors">
+                <span class="material-icons-round">close</span>
+            </a>
         </div>
 
-        <form method="post">
+        <form method="post" class="px-8 pb-8 space-y-6">
             {% csrf_token %}
-            {% for field in form %}
-            <div class="form-group">
-                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {{ field.as_widget }}
-                {% if field.errors %}
-                <div style="color: var(--danger); font-size: 0.875rem;">{{ field.errors }}</div>
+            {% if form.errors %}
+            <div class="bg-red-500/10 border border-red-500/50 text-red-500 text-sm p-3 rounded-lg">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div class="space-y-4">
+                <!-- Name -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-400 ml-1">Account Name</label>
+                    <input type="text" name="name" class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all outline-none placeholder-slate-600" placeholder="e.g. Main Checking" value="{{ form.name.value|default:'' }}" required>
+                    {{ form.name.errors }}
+                </div>
+                
+
+                {% if not object %}
+                <!-- Account Number (Optional) -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-400 ml-1">Account Number (Optional)</label>
+                    <input type="text" name="account_number" class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all outline-none placeholder-slate-600" placeholder="Last 4 digits" value="{{ form.account_number.value|default:'' }}">
+                    {{ form.account_number.errors }}
+                </div>
+
+                <!-- Initial Balance -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-400 ml-1">Current Balance</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-lg font-bold">₹</span>
+                        <input type="number" step="0.01" name="balance" class="w-full bg-slate-900/40 border border-slate-800 rounded-lg pl-8 pr-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all outline-none placeholder-slate-600" placeholder="0.00" value="{{ form.balance.value|default:'0.00' }}">
+                    </div>
+                    {{ form.balance.errors }}
+                </div>
+
+                <!-- Monthly Budget -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-400 ml-1">Monthly Budget Limit</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-lg font-bold">₹</span>
+                        <input type="number" step="0.01" name="monthly_budget" class="w-full bg-slate-900/40 border border-slate-800 rounded-lg pl-8 pr-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all outline-none placeholder-slate-600" placeholder="0.00" value="{{ form.monthly_budget.value|default:'0.00' }}">
+                    </div>
+                     <p class="text-xs text-slate-500 ml-1">Optional. Alerts will be sent if exceeded.</p>
+                    {{ form.monthly_budget.errors }}
+                </div>
                 {% endif %}
             </div>
-            {% endfor %}
 
-            <div class="actions mt-4" style="justify-content: flex-end;">
-                <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary">{% if form.instance.pk %}Update Account{% else %}Create Account{% endif %}</button>
+            <!-- Submit -->
+            <div class="pt-4">
+                <button type="submit" class="w-full bg-primary hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl shadow-neon transition-all hover:translate-y-[-1px] active:translate-y-[1px]">
+                    {% if object %}Save Changes{% else %}Create Account{% endif %}
+                </button>
             </div>
         </form>
     </div>

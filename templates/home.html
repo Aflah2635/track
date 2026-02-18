@@ -1,14 +1,265 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<section class="hero">
-    <h1>Welcome to Expense Tracker</h1>
-    <p>Manage your accounts, track transactions, and stay on top of your finances.</p>
-    {% if not user.is_authenticated %}
-    <div class="cta-buttons">
-        <a href="{% url 'signup' %}" class="btn btn-primary">Get Started</a>
-        <a href="{% url 'login' %}" class="btn btn-secondary">Login</a>
+<!-- Navigation -->
+<nav class="fixed top-0 w-full z-50 glass-panel border-b border-slate-800/50">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-primary rounded flex items-center justify-center shadow-neon">
+                <span class="material-icons-round text-white text-xl">insights</span>
+            </div>
+            <span class="text-2xl font-bold tracking-tight text-white">Track</span>
+        </div>
+        <div class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
+            <a class="hover:text-primary transition-colors" href="#">Features</a>
+            <a class="hover:text-primary transition-colors" href="#">Solutions</a>
+            <a class="hover:text-primary transition-colors" href="#">Pricing</a>
+        </div>
+        <div class="flex items-center gap-4">
+            {% if user.is_authenticated %}
+                {% if user.is_staff or user.is_superuser %}
+                    <a href="{% url 'custom_admin:dashboard' %}" class="text-sm font-medium text-slate-300 hover:text-white px-4 py-2">Admin Panel</a>
+                {% endif %}
+                <a href="{% url 'dashboard' %}" class="bg-primary hover:bg-blue-500 text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-neon hover:shadow-neon-bright">
+                    Dashboard
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" class="text-sm font-medium text-slate-300 hover:text-white px-4 py-2">Login</a>
+                <a href="{% url 'signup' %}" class="bg-primary hover:bg-blue-500 text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-neon hover:shadow-neon-bright">
+                    Get Started
+                </a>
+            {% endif %}
+        </div>
     </div>
-    {% endif %}
-</section>
+</nav>
+
+<main class="relative overflow-hidden pt-20 mesh-gradient">
+    <!-- Hero Section -->
+    <section class="relative pt-24 pb-16 px-6">
+        <div class="max-w-7xl mx-auto text-center">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest mb-8">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                </span>
+                Next Gen Finance
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold text-slate-50 tracking-tight leading-tight mb-6">
+                Financial Clarity for <br/>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">the Modern Age</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+                Master your expenses with AI-driven insights in a slate-dark interface. 
+                Real-time monitoring for the digital economy.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="{% url 'signup' %}" class="w-full sm:w-auto bg-primary hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-neon hover:shadow-neon-bright flex items-center justify-center gap-2">
+                    Get Started <span class="material-icons-round">arrow_forward</span>
+                </a>
+                <button class="w-full sm:w-auto glass-panel text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-800 transition-all border border-slate-700">
+                    View Demo
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Preview Section -->
+    <section class="relative px-6 pb-24">
+        <div class="max-w-6xl mx-auto">
+            <div class="relative rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden group">
+                <!-- Dashboard Header -->
+                <div class="border-b border-slate-800 p-4 flex items-center justify-between bg-slate-950/50">
+                    <div class="flex gap-1.5">
+                        <div class="w-3 h-3 rounded-full bg-slate-700"></div>
+                        <div class="w-3 h-3 rounded-full bg-slate-700"></div>
+                        <div class="w-3 h-3 rounded-full bg-slate-700"></div>
+                    </div>
+                    <div class="px-4 py-1 bg-slate-900 rounded-md text-xs text-slate-500 font-mono">app.track.finance/dashboard</div>
+                    <div class="w-12"></div>
+                </div>
+                <!-- Dashboard Mock Content -->
+                <div class="p-6 md:p-10 grid grid-cols-12 gap-6">
+                    <!-- Sidebar Mock -->
+                    <div class="hidden lg:block col-span-2 space-y-4">
+                        <div class="h-4 w-full bg-slate-800 rounded"></div>
+                        <div class="h-4 w-3/4 bg-slate-800/50 rounded"></div>
+                        <div class="h-4 w-5/6 bg-slate-800/50 rounded"></div>
+                        <div class="pt-8 space-y-4">
+                            <div class="h-4 w-full bg-primary/20 rounded"></div>
+                            <div class="h-4 w-2/3 bg-slate-800/50 rounded"></div>
+                        </div>
+                    </div>
+                    <!-- Main Content Mock -->
+                    <div class="col-span-12 lg:col-span-10 space-y-8">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                                <p class="text-xs text-slate-500 mb-1">Total Balance</p>
+                                <p class="text-2xl font-bold text-white">₹42,920.50</p>
+                                <div class="mt-2 h-1 w-full bg-slate-700 rounded-full overflow-hidden">
+                                    <div class="h-full bg-primary w-2/3 shadow-neon"></div>
+                                </div>
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                                <p class="text-xs text-slate-500 mb-1">Monthly Spend</p>
+                                <p class="text-2xl font-bold text-white">₹3,142.12</p>
+                                <p class="text-xs text-emerald-500 mt-2">↓ 12% from last month</p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                                <p class="text-xs text-slate-500 mb-1">Savings Goal</p>
+                                <p class="text-2xl font-bold text-white">84%</p>
+                                <div class="mt-2 h-1 w-full bg-slate-700 rounded-full overflow-hidden">
+                                    <div class="h-full bg-primary w-4/5 shadow-neon"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Big Chart Area -->
+                        <div class="relative h-64 w-full rounded-xl bg-slate-950 border border-slate-800 p-6">
+                            <div class="flex items-center justify-between mb-8">
+                                <h4 class="text-sm font-semibold text-slate-300">Revenue Growth</h4>
+                                <div class="flex gap-2">
+                                    <div class="w-2 h-2 rounded-full bg-primary shadow-neon"></div>
+                                    <div class="w-2 h-2 rounded-full bg-slate-700"></div>
+                                </div>
+                            </div>
+                            <!-- Visual Chart Representation -->
+                            <div class="absolute bottom-0 left-0 w-full h-40 overflow-hidden px-6 pb-6 flex items-end justify-between gap-2">
+                                <div class="w-full bg-slate-800 h-1/2 rounded-t-sm"></div>
+                                <div class="w-full bg-slate-800 h-2/3 rounded-t-sm"></div>
+                                <div class="w-full bg-primary/40 h-3/4 rounded-t-sm border-t-2 border-primary shadow-neon"></div>
+                                <div class="w-full bg-slate-800 h-1/2 rounded-t-sm"></div>
+                                <div class="w-full bg-primary/40 h-5/6 rounded-t-sm border-t-2 border-primary shadow-neon"></div>
+                                <div class="w-full bg-slate-800 h-2/3 rounded-t-sm"></div>
+                                <div class="w-full bg-slate-800 h-3/4 rounded-t-sm"></div>
+                                <div class="w-full bg-primary h-full rounded-t-sm border-t-2 border-primary shadow-neon"></div>
+                                <div class="w-full bg-slate-800 h-3/4 rounded-t-sm"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Overlay Light Effect -->
+                <div class="absolute inset-0 pointer-events-none bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60"></div>
+            </div>
+            <!-- Floating Elements for Depth -->
+            <div class="hidden lg:block absolute -top-12 -right-12 w-64 h-64 bg-primary/10 rounded-full blur-[100px]"></div>
+            <div class="hidden lg:block absolute -bottom-12 -left-12 w-64 h-64 bg-primary/10 rounded-full blur-[100px]"></div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-24 px-6 relative">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Precision Engineered Features</h2>
+                <p class="text-slate-400">Everything you need to control your capital, powered by the latest AI.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="glass-panel p-8 rounded-2xl hover:border-primary/50 transition-all duration-300 group">
+                    <div class="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6 group-hover:shadow-neon transition-all">
+                        <span class="material-icons-round text-primary text-3xl">auto_graph</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Smart Tracking</h3>
+                    <p class="text-slate-400 leading-relaxed">
+                        Automatically categorize every transaction using our proprietary AI engine. Gain instant insight into your spending patterns without manual entry.
+                    </p>
+                </div>
+                <!-- Feature 2 -->
+                <div class="glass-panel p-8 rounded-2xl hover:border-primary/50 transition-all duration-300 group">
+                    <div class="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6 group-hover:shadow-neon transition-all">
+                        <span class="material-icons-round text-primary text-3xl">sync_lock</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Secure Sync</h3>
+                    <p class="text-slate-400 leading-relaxed">
+                        Connect over 10,000+ financial institutions with bank-grade 256-bit AES encryption. Your data is always private and protected by multi-factor auth.
+                    </p>
+                </div>
+                <!-- Feature 3 -->
+                <div class="glass-panel p-8 rounded-2xl hover:border-primary/50 transition-all duration-300 group">
+                    <div class="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6 group-hover:shadow-neon transition-all">
+                        <span class="material-icons-round text-primary text-3xl">analytics</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Advanced Reporting</h3>
+                    <p class="text-slate-400 leading-relaxed">
+                        Generate high-fidelity reports for tax season or investment reviews. Custom filters and beautiful exports make your data work for you.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Bottom -->
+    <section class="py-24 px-6">
+        <div class="max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-primary to-blue-800 p-12 text-center shadow-neon-bright relative overflow-hidden">
+            <div class="relative z-10">
+                <h2 class="text-4xl font-bold text-white mb-6">Ready to take control?</h2>
+                <p class="text-blue-100 text-lg mb-10 max-w-xl mx-auto">
+                    Join 50,000+ professionals who track their wealth with the ultimate slate-dark interface.
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a href="{% url 'signup' %}" class="bg-white text-primary px-8 py-4 rounded-xl font-bold hover:bg-blue-50 transition-colors shadow-lg">
+                        Get Started Free
+                    </a>
+                    <button class="bg-primary/20 border border-white/20 text-white px-8 py-4 rounded-xl font-bold hover:bg-primary/30 transition-colors">
+                        Contact Sales
+                    </button>
+                </div>
+            </div>
+            <!-- Decoration -->
+            <div class="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-white/10 rounded-full blur-[80px]"></div>
+            <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-black/20 rounded-full blur-[80px]"></div>
+        </div>
+    </section>
+</main>
+
+<footer class="bg-background-dark border-t border-slate-800/50 py-16 px-6">
+    <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12">
+        <div class="col-span-2 md:col-span-1">
+            <div class="flex items-center gap-2 mb-6">
+                <div class="w-6 h-6 bg-primary rounded flex items-center justify-center">
+                    <span class="material-icons-round text-white text-sm">insights</span>
+                </div>
+                <span class="text-xl font-bold text-white">Track</span>
+            </div>
+            <p class="text-slate-500 text-sm leading-relaxed">
+                The next generation of financial tracking and insights. Built for the modern digital era.
+            </p>
+        </div>
+        <div>
+            <h4 class="text-white font-bold mb-6">Product</h4>
+            <ul class="space-y-4 text-sm text-slate-500">
+                <li><a class="hover:text-primary transition-colors" href="#">Features</a></li>
+                <li><a class="hover:text-primary transition-colors" href="#">Pricing</a></li>
+                <li><a class="hover:text-primary transition-colors" href="#">API Reference</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4 class="text-white font-bold mb-6">Company</h4>
+            <ul class="space-y-4 text-sm text-slate-500">
+                <li><a class="hover:text-primary transition-colors" href="#">About Us</a></li>
+                <li><a class="hover:text-primary transition-colors" href="#">Privacy Policy</a></li>
+                <li><a class="hover:text-primary transition-colors" href="#">Contact</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4 class="text-white font-bold mb-6">Social</h4>
+            <div class="flex gap-4">
+                <a class="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-primary hover:border-primary transition-all" href="#">
+                    <span class="material-icons-round text-lg">public</span>
+                </a>
+                <a class="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-primary hover:border-primary transition-all" href="#">
+                    <span class="material-icons-round text-lg">alternate_email</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="max-w-7xl mx-auto mt-16 pt-8 border-t border-slate-800/50 flex flex-col md:flex-row justify-between items-center gap-4">
+        <p class="text-xs text-slate-600">© 2024 Track Technologies Inc. All rights reserved.</p>
+        <div class="flex gap-6 text-xs text-slate-600">
+            <a class="hover:text-slate-400" href="#">Terms</a>
+            <a class="hover:text-slate-400" href="#">Privacy</a>
+            <a class="hover:text-slate-400" href="#">Cookies</a>
+        </div>
+    </div>
+</footer>
 {% endblock %}

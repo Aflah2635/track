@@ -1,101 +1,190 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
-
+<html class="dark" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Expense Tracker{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>{% block title %}Track - Financial Clarity{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round|Material+Icons" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+    
+    <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="{% static 'js/dropdown.js' %}" defer></script>
-</head>
+    <script src="{% static 'js/animations.js' %}" defer></script>
 
-<body hx-boost="true">
-    <div class="{% if user.is_authenticated %}layout-dashboard{% else %}layout-public{% endif %}">
-        {% if user.is_authenticated %}
-        <aside class="sidebar">
-            <div class="brand">
-                <span>ExpenseTracker</span>
-            </div>
-            <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')"
-                aria-label="Toggle menu">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
-            </button>
-            <ul class="nav-links">
-                <li><a href="{% url 'dashboard' %}{% if active_account %}?account={{ active_account.id }}{% endif %}"
-                        class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a>
-                </li>
-                <li><a href="{% url 'manage_accounts' %}{% if active_account %}?account={{ active_account.id }}{% endif %}"
-                        class="nav-link {% if 'accounts' in request.path %}active{% endif %}">Manage Accounts</a></li>
-                <li><a href="{% url 'add_transaction' %}{% if active_account %}?account={{ active_account.id }}{% endif %}"
-                        class="nav-link {% if 'transaction' in request.path %}active{% endif %}">Transactions</a></li>
-                <li>
-                    <a href="{% url 'notifications:list' %}{% if active_account %}?account={{ active_account.id }}{% endif %}"
-                        class="nav-link {% if 'notifications' in request.path %}active{% endif %} d-flex align-items-center justify-content-between">
-                        <span>Notifications</span>
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2d69e1",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#020617", // Deeper slate for "Slate & Neon"
+                        "slate-950": "#020617",
+                        "slate-900": "#0f172a",
+                        "slate-800": "#1e293b",
+                        "slate-700": "#334155",
+                        "slate-card": "rgba(15, 23, 42, 0.4)",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        "neon": "0 0 15px rgba(45, 105, 225, 0.4), 0 0 5px rgba(45, 105, 225, 0.2)",
+                        "neon-bright": "0 0 25px rgba(45, 105, 225, 0.6), 0 0 10px rgba(45, 105, 225, 0.4)",
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen selection:bg-primary selection:text-white page-transition" hx-boost="true">
+    
+    {% if user.is_authenticated and not hide_sidebar %}
+    <div class="flex min-h-screen">
+        <!-- Sidebar Navigation -->
+        <aside class="fixed inset-y-0 left-0 w-64 bg-slate-950 border-r border-slate-800 z-10 hidden lg:block">
+            <div class="p-8">
+                <div class="flex items-center gap-2 mb-10">
+                    <div class="w-8 h-8 bg-primary rounded flex items-center justify-center shadow-neon">
+                        <span class="material-icons-round text-white text-lg">insights</span>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight text-white uppercase">Expense Tracker</span>
+                </div>
+                <nav class="space-y-2">
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'dashboard' %}bg-primary/10 text-primary border-r-2 border-primary{% else %}text-slate-400 hover:text-white hover:bg-slate-900{% endif %} transition-all hover-scale" href="{% url 'dashboard' %}">
+                        <span class="material-icons-round text-xl">dashboard</span>
+                        <span class="font-medium">Dashboard</span>
+                    </a>
+                    <details class="group" {% if 'transaction' in request.path %}open{% endif %}>
+                        <summary class="flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer list-none {% if 'transaction' in request.path %}bg-slate-900 text-white{% else %}text-slate-400 hover:text-white hover:bg-slate-900{% endif %} transition-all select-none hover-scale">
+                            <span class="material-icons-round text-xl">receipt_long</span>
+                            <span class="font-medium flex-1">Transactions</span>
+                            <span class="material-icons-round text-xl transition-transform duration-200 group-open:-rotate-180">expand_more</span>
+                        </summary>
+                        <div class="pl-11 pr-2 pt-2 space-y-1">
+                            <a href="{% url 'add_transaction' %}" class="block py-2 px-3 rounded-lg text-sm {% if request.resolver_match.url_name == 'add_transaction' %}text-primary bg-primary/10 border-l-2 border-primary{% else %}text-slate-400 hover:text-white hover:bg-slate-900/50{% endif %} transition-colors">
+                                Add Transaction
+                            </a>
+                            <a href="{% url 'transaction_list' %}" class="block py-2 px-3 rounded-lg text-sm {% if request.resolver_match.url_name == 'transaction_list' %}text-primary bg-primary/10 border-l-2 border-primary{% else %}text-slate-400 hover:text-white hover:bg-slate-900/50{% endif %} transition-colors">
+                                Transaction List
+                            </a>
+                        </div>
+                    </details>
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if 'accounts' in request.path %}bg-primary/10 text-primary border-r-2 border-primary{% else %}text-slate-400 hover:text-white hover:bg-slate-900{% endif %} transition-all hover-scale" href="{% url 'manage_accounts' %}">
+                        <span class="material-icons-round text-xl">account_balance_wallet</span>
+                        <span class="font-medium">Accounts</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if 'notifications' in request.path %}bg-primary/10 text-primary border-r-2 border-primary{% else %}text-slate-400 hover:text-white hover:bg-slate-900{% endif %} transition-all hover-scale" href="{% url 'notifications:list' %}">
+                        <span class="material-icons-round text-xl">notifications</span>
+                        <span class="font-medium">Notifications</span>
                         {% if notification_count > 0 %}
-                        <span class="badge bg-danger rounded-pill ms-2"
-                            style="display: inline-flex; align-items: center; justify-content: center; min-width: 1.5em; height: 1.5em; font-size: 0.75rem;">
-                            {{ notification_count }}
-                        </span>
+                        <span class="ml-auto w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white font-bold animate-pulse">{{ notification_count }}</span>
                         {% endif %}
                     </a>
-                </li>
-                <li><a href="{% url 'category_list' %}{% if active_account %}?account={{ active_account.id }}{% endif %}"
-                        class="nav-link {% if 'categories' in request.path %}active{% endif %}">Categories</a></li>
-                <!-- Profile Link -->
-                <li><a href="{% url 'profile' %}"
-                    class="nav-link {% if 'profile' in request.path %}active{% endif %}">Profile</a></li>
-                <li style="margin-top: auto; width: 100%;">
-                    <form action="{% url 'logout' %}" method="post">
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if 'categories' in request.path %}bg-primary/10 text-primary border-r-2 border-primary{% else %}text-slate-400 hover:text-white hover:bg-slate-900{% endif %} transition-all hover-scale" href="{% url 'category_list' %}">
+                        <span class="material-icons-round text-xl">category</span>
+                        <span class="font-medium">Categories</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if 'pricing' in request.path %}bg-primary/10 text-primary border-r-2 border-primary{% else %}text-slate-400 hover:text-white hover:bg-slate-900{% endif %} transition-all hover-scale" href="{% url 'pricing' %}">
+                        <span class="material-icons-round text-xl">payments</span>
+                        <span class="font-medium">Pricing</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if 'profile' in request.path %}bg-primary/10 text-primary border-r-2 border-primary{% else %}text-slate-400 hover:text-white hover:bg-slate-900{% endif %} transition-all hover-scale" href="{% url 'profile' %}">
+                        <span class="material-icons-round text-xl">person</span>
+                        <span class="font-medium">Profile</span>
+                    </a>
+                    
+                    {% if user.is_staff or user.is_superuser %}
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-red-500/10 text-red-500 border-r-2 border-red-500 transition-all mt-4 hover-scale" href="/custom-admin/">
+                        <span class="material-icons-round text-xl">admin_panel_settings</span>
+                        <span class="font-medium">Admin Panel</span>
+                    </a>
+                    {% endif %}
+                </nav>
+            </div>
+            
+            <!-- User Footer in Sidebar -->
+            <div class="absolute bottom-0 left-0 w-full p-8 border-t border-slate-900">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-slate-800 overflow-hidden flex items-center justify-center">
+                            {% if user.profile.avatar %}
+                                <img src="{{ user.profile.avatar.url }}" alt="Profile" class="w-full h-full object-cover">
+                            {% else %}
+                                <span class="material-icons text-slate-400">person</span>
+                            {% endif %}
+                        </div>
+                        <div class="overflow-hidden">
+                            <p class="text-sm font-bold text-white truncate w-24">{{ user.username }}</p>
+                            <p class="text-xs text-slate-500">{{ user.subscription.plan.get_name_display }}</p>
+                        </div>
+                    </div>
+                     <form action="{% url 'logout' %}" method="post">
                         {% csrf_token %}
-                        <button type="submit" class="nav-link text-left"
-                            style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; font-family: inherit; font-size: inherit;">
-                            Logout
+                        <button type="submit" class="text-slate-400 hover:text-white transition-colors" title="Logout">
+                            <span class="material-icons-round">logout</span>
                         </button>
                     </form>
-                </li>
-            </ul>
-        </aside>
-        {% else %}
-        <!-- Simple Nav for Public Pages -->
-        <nav class="navbar">
-            <div class="brand">
-                <a href="{% url 'home' %}">ExpenseTracker</a>
-            </div>
-            <div class="nav-links" style="flex-direction: row; width: auto; align-items: center;">
-                <a href="{% url 'login' %}" class="nav-link">Login</a>
-                <a href="{% url 'signup' %}" class="btn btn-secondary"
-                    style="padding: 0.25rem 0.75rem; white-space: nowrap;">Sign Up</a>
-            </div>
-        </nav>
-        {% endif %}
-
-        <main class="main-content">
-            <div class="container">
-                {% if messages %}
-                <div class="messages mb-4">
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}"
-                        style="padding: 1rem; margin-bottom: 1rem; border-radius: 0.5rem; background-color: var(--bg-surface); border: 1px solid var(--border);">
-                        {{ message }}
-                    </div>
-                    {% endfor %}
                 </div>
-                {% endif %}
-
-                {% block content %}
-                {% endblock %}
             </div>
+        </aside>
+
+        <!-- Main Content for Authenticated Users -->
+        <main class="lg:ml-64 flex-1 p-6 lg:p-12 bg-slate-950 relative overflow-hidden min-h-screen w-full">
+            {% if messages %}
+            {% if messages %}
+            <div class="mb-6 space-y-2 relative z-50">
+                {% for message in messages %}
+                <div class="notification-toast p-4 rounded-lg border flex items-center gap-3 shadow-lg {% if message.tags == 'success' %}bg-emerald-500/10 border-emerald-500/20 text-emerald-500{% elif message.tags == 'error' %}bg-red-500/10 border-red-500/20 text-red-500{% else %}bg-slate-900 border-slate-800 text-white{% endif %}">
+                    <span class="material-icons-round">{% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% else %}info{% endif %}</span>
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endif %}
+
+    {% else %}
+        <!-- Content for Public Users (No Sidebar) -->
+        {% if messages %}
+        <div class="fixed top-24 right-6 z-50 space-y-2">
+            {% for message in messages %}
+            <div class="notification-toast p-4 rounded-lg backdrop-blur border flex items-center gap-3 shadow-neon {% if message.tags == 'success' %}bg-emerald-500/10 border-emerald-500/20 text-emerald-500{% elif message.tags == 'error' %}bg-red-500/10 border-red-500/20 text-red-500{% else %}bg-slate-900/90 border-slate-800 text-white{% endif %}">
+                <span class="material-icons-round">{% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% else %}info{% endif %}</span>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <!-- Shared Content Block -->
+    {% block content %}{% endblock %}
+
+    {% if user.is_authenticated and not hide_sidebar %}
         </main>
     </div>
-</body>
+    {% endif %}
 
+</body>
 </html>

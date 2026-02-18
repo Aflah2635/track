@@ -4,6 +4,7 @@ from django.core.cache import cache
 class MaintenanceState(models.Model):
     is_maintenance = models.BooleanField(default=False)
     is_read_only = models.BooleanField(default=False)
+    expected_duration = models.CharField(max_length=100, blank=True, null=True, help_text="e.g. '2 hours', '15 mins'")
     updated_by = models.CharField(max_length=100, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
     logging_channel_id = models.CharField(max_length=100, blank=True, null=True)
@@ -37,11 +38,15 @@ class MaintenanceState(models.Model):
         if old_maintenance is not None and old_maintenance != self.is_maintenance:
             status = "ENABLED" if self.is_maintenance else "DISABLED"
             color = LogColors.WARNING if self.is_maintenance else LogColors.SUCCESS
+            details = {'Status': status}
+            if self.is_maintenance and self.expected_duration:
+                details['Duration'] = self.expected_duration
+                
             log_to_discord(
                 event_type=LogEvents.MAINTENANCE,
                 title=f"Maintenance {status}",
                 user=self.updated_by or "System",
-                details={'Status': status},
+                details=details,
                 color=color
             )
             
@@ -77,12 +82,18 @@ class MaintenanceState(models.Model):
         return is_read_only
 
     @classmethod
-    def set_state(cls, maintenance=None, read_only=None, user_id=None):
+    def set_state(cls, maintenance=None, read_only=None, user_id=None, duration=None):
         obj, created = cls.objects.get_or_create(pk=1)
         if maintenance is not None:
             obj.is_maintenance = maintenance
         if read_only is not None:
             obj.is_read_only = read_only
+        
+        # Only update duration if we are setting maintenance to True or explicitly passing duration
+        if maintenance is True and duration:
+            obj.expected_duration = duration
+        elif maintenance is False:
+            obj.expected_duration = None  # Clear duration when turning off
         
         if user_id:
             obj.updated_by = str(user_id)

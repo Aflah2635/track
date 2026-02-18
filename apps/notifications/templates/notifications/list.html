@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-white tracking-tight">Notifications</h1>
+            <p class="text-slate-400 mt-2">Manage your financial activities and system alerts.</p>
+        </div>
+        {% if unread_count > 0 %}
+        <form method="post" action="{% url 'notifications:mark_all_read' %}">
+            {% csrf_token %}
+            <button type="submit" class="px-4 py-2 text-sm font-semibold text-slate-400 hover:text-white border border-slate-800 rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-2">
+                <span class="material-icons-round text-base">done_all</span>
+                Mark all as read
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- Filter Tabs (Visual Only for now) -->
+    <div class="flex border-b border-slate-800 mb-8 overflow-x-auto no-scrollbar">
+        <button class="px-6 py-3 text-sm font-bold border-b-2 border-primary bg-primary/10 text-primary whitespace-nowrap">
+            All
+        </button>
+        <button class="px-6 py-3 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-300 transition-colors whitespace-nowrap flex items-center gap-2">
+            Unread
+            {% if unread_count > 0 %}
+            <span class="px-1.5 py-0.5 bg-slate-800 text-[10px] rounded text-slate-400">{{ unread_count }}</span>
+            {% endif %}
+        </button>
+    </div>
+
+    <!-- Notification List -->
+    <div class="space-y-3">
+        {% for notification in notifications %}
+        <div class="glass-card group flex items-start gap-4 p-5 rounded-xl border {% if not notification.is_read %}border-primary/30 bg-primary/5{% else %}border-slate-800{% endif %} hover:bg-slate-800/60 transition-all duration-200 relative overflow-hidden">
+            {% if not notification.is_read %}
+            <div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+            {% endif %}
+            
+            <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center
+                {% if notification.type == 'low_balance' or notification.type == 'budget_exceeded' %}bg-amber-500/10 border border-amber-500/20 text-amber-500
+                {% elif notification.type == 'large_transaction' %}bg-emerald-500/10 border border-emerald-500/20 text-emerald-500
+                {% else %}bg-primary/10 border border-primary/20 text-primary{% endif %}">
+                <span class="material-icons-round">
+                    {% if notification.type == 'low_balance' %}account_balance_wallet
+                    {% elif notification.type == 'budget_exceeded' %}warning
+                    {% elif notification.type == 'large_transaction' %}payments
+                    {% elif notification.type == 'shared_activity' %}group
+                    {% else %}notifications{% endif %}
+                </span>
+            </div>
+            
+            <div class="flex-grow min-w-0">
+                <div class="flex justify-between items-start mb-1">
+                    <h3 class="text-white font-bold text-lg truncate">{{ notification.get_type_display }}</h3>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap ml-4 mt-1">{{ notification.created_at|timesince }} AGO</span>
+                </div>
+                <p class="text-slate-400 text-sm leading-relaxed">{{ notification.message }}</p>
+            </div>
+            
+            <div class="opacity-0 group-hover:opacity-100 flex items-center gap-2 transition-opacity">
+                {% if not notification.is_read %}
+                <form method="post" action="{% url 'notifications:mark_read' notification.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="p-2 hover:bg-slate-700 rounded-lg text-slate-500 hover:text-white" title="Mark as read">
+                        <span class="material-icons-round text-sm">check</span>
+                    </button>
+                </form>
+                {% endif %}
+                <form method="post" action="{% url 'notifications:delete' notification.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="p-2 hover:bg-slate-700 rounded-lg text-slate-500 hover:text-white" title="Delete">
+                        <span class="material-icons-round text-sm">close</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-12 text-slate-500">
+            <span class="material-icons-round text-4xl mb-2 opacity-50">notifications_off</span>
+            <p>No notifications found.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="mt-12 text-center">
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="inline-flex items-center gap-2 px-8 py-3 bg-slate-900 border border-slate-800 rounded-full text-slate-300 hover:text-white hover:border-slate-700 transition-all font-semibold text-sm">
+            Load More
+            <span class="material-icons-round text-sm">expand_more</span>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

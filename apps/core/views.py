@@ -95,6 +95,15 @@ def dashboard(request):
                 Q(description__icontains=query)
             )
             
+        # Check Plan Limits for Filters
+        user_sub = request.user.subscription
+        if user_sub.plan.name == 'BASIC':
+            if user_filter or date_from or date_to:
+                 messages.info(request, "Advanced filters (User, Date) are available on Plus/Pro plans.")
+                 user_filter = None
+                 date_from = None
+                 date_to = None
+
         if category_filter and category_filter.isdigit():
             all_txns = all_txns.filter(category_id=category_filter)
             
@@ -139,8 +148,6 @@ def dashboard(request):
         total_debit = stats['total_debit']
         total_lent = stats['total_lent']
         total_borrowed = stats['total_borrowed']
-            
-
     
     context = {
         'accounts': all_accounts,
@@ -163,5 +170,16 @@ def dashboard(request):
         'filter_user': int(user_filter) if active_account and 'user_filter' in locals() and user_filter and user_filter.isdigit() else '',
         'filter_date_from': date_from if active_account and 'date_from' in locals() and date_from else '',
         'filter_date_to': date_to if active_account and 'date_to' in locals() and date_to else '',
+        
+        # Feature Flags
+        'show_analytics': request.user.subscription.plan.allow_advanced_analytics,
     }
     return render(request, 'dashboard.html', context)
+
+from apps.subscriptions.decorators import plan_required
+from django.contrib.auth.decorators import login_required
+
+@login_required
+@plan_required('allow_advanced_analytics')
+def analytics_dashboard(request):
+    return render(request, 'core/analytics.html', {'title': 'Advanced Analytics'})

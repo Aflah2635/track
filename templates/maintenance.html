@@ -1,20 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maintenance Mode</title>
+    <title>Maintenance - Track</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 50px; background: #f3f4f6; color: #1f2937; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { margin-bottom: 20px; color: #dc2626; }
-        p { margin-bottom: 20px; color: #4b5563; }
+        body { font-family: 'Space Grotesk', sans-serif; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+        .animate-scale-up { animation: scaleUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(30, 41, 59, 0.8);
+        }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Under Maintenance</h1>
-        <p>We are currently performing scheduled maintenance. Please check back later.</p>
+<body class="bg-slate-950 text-white min-h-screen flex items-center justify-center p-4 overflow-hidden relative animate-fade-in">
+
+    <!-- Background Decoration -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[100px]"></div>
     </div>
+
+    <div class="max-w-md w-full glass-card rounded-2xl p-8 text-center relative z-10 shadow-2xl animate-scale-up">
+        <div class="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-700">
+            <span class="material-icons-round text-4xl text-amber-500">engineering</span>
+        </div>
+        
+        <h1 class="text-3xl font-bold mb-3 tracking-tight">Under Maintenance</h1>
+        <p class="text-slate-400 mb-8 leading-relaxed">
+            We're currently performing scheduled updates to improve your experience. We'll be back shortly.
+        </p>
+        
+        <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+            <div class="bg-blue-500 h-full w-1/3 rounded-full animate-[loading_2s_ease-in-out_infinite]"></div>
+        </div>
+        <style>
+            @keyframes loading {
+                0% { transform: translateX(-100%); }
+                50% { transform: translateX(100%); width: 50%; }
+                100% { transform: translateX(200%); }
+            }
+        </style>
+        
+        {% if state.expected_duration %}
+        <p class="text-xs text-slate-500 mt-6">Expected duration: {{ state.expected_duration }}</p>
+        {% endif %}
+    </div>
+
 </body>
 </html>
