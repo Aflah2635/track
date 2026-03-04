@@ -33,7 +33,7 @@ ALLOWED_HOSTS = [
     "aflah263.pythonanywhere.com",
     "127.0.0.1",
     "localhost",
-    "192.168.18.30",
+    "192.168.18.30"
 ]
 
 
@@ -95,8 +95,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+import dj_database_url
 
 DATABASES = {
     'default': {

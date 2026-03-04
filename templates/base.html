@@ -150,7 +150,7 @@
         </aside>
 
         <!-- Main Content for Authenticated Users -->
-        <main class="lg:ml-64 flex-1 p-6 lg:p-12 bg-slate-950 relative overflow-hidden min-h-screen w-full">
+        <main class="lg:ml-64 flex-1 p-6 lg:p-12 pb-24 lg:pb-12 bg-slate-950 relative overflow-hidden min-h-screen w-full">
             {% if messages %}
             {% if messages %}
             <div class="mb-6 space-y-2 relative z-50">
@@ -183,6 +183,31 @@
 
     {% if user.is_authenticated and not hide_sidebar %}
         </main>
+
+        <!-- Mobile Bottom Navigation Bar -->
+        <nav class="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/80">
+            <div class="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
+                <a href="{% url 'dashboard' %}" class="flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'dashboard' %}text-primary{% else %}text-slate-500 active:text-slate-300{% endif %}">
+                    <span class="material-icons-round text-[22px]">dashboard</span>
+                    <span class="text-[10px] font-medium tracking-wide">Home</span>
+                </a>
+                <a href="{% url 'transaction_list' %}" class="flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'transaction_list' %}text-primary{% else %}text-slate-500 active:text-slate-300{% endif %}">
+                    <span class="material-icons-round text-[22px]">receipt_long</span>
+                    <span class="text-[10px] font-medium tracking-wide">History</span>
+                </a>
+                <a href="{% url 'add_transaction' %}" class="flex items-center justify-center w-12 h-12 -mt-5 rounded-2xl bg-primary shadow-neon-bright text-white transition-all duration-200 active:scale-95">
+                    <span class="material-icons-round text-[28px]">add</span>
+                </a>
+                <a href="{% url 'manage_accounts' %}" class="flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-xl transition-all duration-200 {% if 'accounts' in request.path %}text-primary{% else %}text-slate-500 active:text-slate-300{% endif %}">
+                    <span class="material-icons-round text-[22px]">account_balance_wallet</span>
+                    <span class="text-[10px] font-medium tracking-wide">Accounts</span>
+                </a>
+                <a href="{% url 'profile' %}" class="flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-xl transition-all duration-200 {% if 'profile' in request.path %}text-primary{% else %}text-slate-500 active:text-slate-300{% endif %}">
+                    <span class="material-icons-round text-[22px]">person</span>
+                    <span class="text-[10px] font-medium tracking-wide">Profile</span>
+                </a>
+            </div>
+        </nav>
     </div>
     {% endif %}
 

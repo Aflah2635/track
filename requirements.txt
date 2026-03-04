@@ -8,3 +8,5 @@ pip-audit
 django-ratelimit
 xhtml2pdf
 openpyxl
+psycopg2-binary
+dj-database-url
