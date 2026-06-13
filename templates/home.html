@@ -12,9 +12,9 @@
             <span class="text-2xl font-bold tracking-tight text-white">Track</span>
         </div>
         <div class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
-            <a class="hover:text-primary transition-colors" href="#">Features</a>
-            <a class="hover:text-primary transition-colors" href="#">Solutions</a>
-            <a class="hover:text-primary transition-colors" href="#">Pricing</a>
+            <a class="hover:text-primary transition-colors" href="#features">Features</a>
+            <a class="hover:text-primary transition-colors" href="#solutions">Solutions</a>
+            <a class="hover:text-primary transition-colors" href="#pricing">Pricing</a>
         </div>
         <div class="flex items-center gap-4">
             {% if user.is_authenticated %}
@@ -147,7 +147,7 @@
     </section>
 
     <!-- Features Section -->
-    <section class="py-24 px-6 relative">
+    <section id="features" class="py-24 px-6 relative">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16">
                 <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Precision Engineered Features</h2>
@@ -184,6 +184,101 @@
                         Generate high-fidelity reports for tax season or investment reviews. Custom filters and beautiful exports make your data work for you.
                     </p>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solutions Section -->
+    <section id="solutions" class="py-24 px-6 relative bg-slate-900/50">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Tailored Solutions</h2>
+                <p class="text-slate-400">Designed for every stage of your financial tracking journey.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Solution 1 -->
+                <div class="glass-panel p-10 rounded-2xl border border-slate-800 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-[50px] group-hover:bg-primary/20 transition-all"></div>
+                    <h3 class="text-2xl font-bold text-white mb-4">For Individuals</h3>
+                    <p class="text-slate-400 leading-relaxed mb-6">
+                        Take absolute control of your personal finances. Track subscriptions, categorize daily spending, and set AI-assisted savings goals.
+                    </p>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-2 text-sm text-slate-300">
+                            <span class="material-icons-round text-primary text-sm">check_circle</span> Budget planning
+                        </li>
+                        <li class="flex items-center gap-2 text-sm text-slate-300">
+                            <span class="material-icons-round text-primary text-sm">check_circle</span> Bill reminders
+                        </li>
+                    </ul>
+                    <a href="#" class="text-primary font-semibold text-sm hover:underline flex items-center gap-1">Learn more <span class="material-icons-round text-sm">arrow_forward</span></a>
+                </div>
+                <!-- Solution 2 -->
+                <div class="glass-panel p-10 rounded-2xl border border-slate-800 hover:border-primary/50 transition-all duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-[50px] group-hover:bg-blue-500/20 transition-all"></div>
+                    <h3 class="text-2xl font-bold text-white mb-4">For Businesses</h3>
+                    <p class="text-slate-400 leading-relaxed mb-6">
+                        Streamline your company's expenses. Manage team cards, automate receipt matching, and generate detailed P&L reports seamlessly.
+                    </p>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-2 text-sm text-slate-300">
+                            <span class="material-icons-round text-blue-400 text-sm">check_circle</span> Expense routing
+                        </li>
+                        <li class="flex items-center gap-2 text-sm text-slate-300">
+                            <span class="material-icons-round text-blue-400 text-sm">check_circle</span> Tax preparation
+                        </li>
+                    </ul>
+                    <a href="#" class="text-blue-400 font-semibold text-sm hover:underline flex items-center gap-1">Learn more <span class="material-icons-round text-sm">arrow_forward</span></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-24 px-6 relative">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Transparent Pricing</h2>
+                <p class="text-slate-400">No hidden fees. Choose the plan that fits your needs.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                {% for plan in plans %}
+                <!-- Card -->
+                <div class="glass-panel p-8 rounded-2xl border {% if plan.name == 'PRO' %}border-primary shadow-neon transform md:-translate-y-4 relative{% else %}border-slate-800{% endif %} flex flex-col transition-all hover:border-primary/50">
+                    {% if plan.name == 'PRO' %}
+                    <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-primary text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Most Popular</div>
+                    {% endif %}
+                    
+                    <h3 class="text-lg font-semibold {% if plan.name == 'PRO' %}text-primary{% else %}text-slate-300{% endif %} mb-2">{{ plan.get_name_display }}</h3>
+                    <div class="text-4xl font-bold text-white mb-6">{% if plan.price == 0 %}Free{% else %}₹{{ plan.price|floatformat:"0" }}{% endif %}<span class="text-sm text-slate-500 font-normal">/mo</span></div>
+                    
+                    <ul class="space-y-4 mb-8 flex-grow">
+                        <li class="flex items-center gap-3 text-sm {% if plan.name == 'PRO' %}text-slate-200{% else %}text-slate-400{% endif %}">
+                            <span class="material-icons-round {% if plan.name == 'PRO' %}text-primary{% else %}text-slate-600{% endif %} text-base">check</span>
+                            {% if plan.max_accounts %}Up to {{ plan.max_accounts }} connections{% else %}Unlimited connections{% endif %}
+                        </li>
+                        <li class="flex items-center gap-3 text-sm {% if plan.name == 'PRO' %}text-slate-200{% else %}text-slate-400{% endif %}">
+                            <span class="material-icons-round {% if plan.name == 'PRO' %}text-primary{% else %}text-slate-600{% endif %} text-base">check</span>
+                            {% if plan.max_shared_accounts %}Up to {{ plan.max_shared_accounts }} shared accounts{% elif plan.max_shared_accounts == 0 %}No shared accounts{% else %}Unlimited shared accounts{% endif %}
+                        </li>
+                        <li class="flex items-center gap-3 text-sm {% if plan.name == 'PRO' %}text-slate-200{% else %}text-slate-400{% endif %}">
+                            <span class="material-icons-round {% if plan.name == 'PRO' %}text-primary{% else %}text-slate-600{% endif %} text-base">check</span>
+                            {% if plan.pdf_export_limit %}Up to {{ plan.pdf_export_limit }} PDF receipts / mo{% else %}Unlimited PDF receipts{% endif %}
+                        </li>
+                        {% if plan.allow_export %}
+                        <li class="flex items-center gap-3 text-sm {% if plan.name == 'PRO' %}text-slate-200{% else %}text-slate-400{% endif %}">
+                            <span class="material-icons-round {% if plan.name == 'PRO' %}text-primary{% else %}text-slate-600{% endif %} text-base">check</span> CSV/Excel Export
+                        </li>
+                        {% endif %}
+                        {% if plan.allow_advanced_analytics %}
+                        <li class="flex items-center gap-3 text-sm {% if plan.name == 'PRO' %}text-slate-200{% else %}text-slate-400{% endif %}">
+                            <span class="material-icons-round {% if plan.name == 'PRO' %}text-primary{% else %}text-slate-600{% endif %} text-base">check</span> Advanced Analytics
+                        </li>
+                        {% endif %}
+                    </ul>
+                    <a href="{% url 'signup' %}" class="w-full py-3 rounded-xl block {% if plan.name == 'PRO' %}bg-primary hover:bg-blue-500 text-white shadow-neon hover:shadow-neon-bright text-center{% else %}border border-slate-700 text-white hover:bg-slate-800 text-center{% endif %} font-semibold transition-all">Get Started</a>
+                </div>
+                {% endfor %}
             </div>
         </div>
     </section>

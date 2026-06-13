@@ -5,6 +5,7 @@ from django.core.paginator import Paginator
 from django.core.cache import cache
 from apps.accounts.models import Account, AccountAccess
 from apps.transactions.models import Transaction
+from apps.subscriptions.models import SubscriptionPlan
 
 from django_ratelimit.decorators import ratelimit
 
@@ -12,7 +13,9 @@ from django_ratelimit.decorators import ratelimit
 def home(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
-    return render(request, 'home.html')
+    
+    plans = SubscriptionPlan.objects.filter(is_active=True).order_by('price')
+    return render(request, 'home.html', {'plans': plans})
 
 @login_required
 def dashboard(request):
@@ -149,7 +152,10 @@ def dashboard(request):
         total_lent = stats['total_lent']
         total_borrowed = stats['total_borrowed']
     
+    goals = request.user.goals.all()
+
     context = {
+        'goals': goals,
         'accounts': all_accounts,
         'active_account': active_account,
         'transactions': transactions,

@@ -21,7 +21,8 @@ from apps.users.views import SignUpView
 from apps.accounts.views import (
     AccountCreateView, share_account, revoke_access, switch_account,
     AccountListView, AccountUpdateView, AccountDeleteView,
-    CategoryListView, CategoryCreateView, CategoryUpdateView, CategoryDeleteView
+    CategoryListView, CategoryCreateView, CategoryUpdateView, CategoryDeleteView,
+    GoalCreateView, GoalUpdateView, GoalDeleteView
 )
 from apps.transactions.views import (
     TransactionListView,
@@ -58,6 +59,11 @@ urlpatterns = [
     path('transaction/<int:pk>/delete/', TransactionDeleteView.as_view(), name='delete_transaction'),
     path('accounts/<int:pk>/statement/pdf/', StatementPDFView.as_view(), name='statement_pdf'),
     path('notifications/', include('apps.notifications.urls')),
+    
+    # Goals
+    path('goal/add/', GoalCreateView.as_view(), name='add_goal'),
+    path('goal/<int:pk>/edit/', GoalUpdateView.as_view(), name='edit_goal'),
+    path('goal/<int:pk>/delete/', GoalDeleteView.as_view(), name='delete_goal'),
     
     # Categories
     path('categories/', CategoryListView.as_view(), name='category_list'),

@@ -263,9 +263,10 @@ class ExportTransactionsView(LoginRequiredMixin, View):
             # Yield Header
             yield writer.writerow(['Date', 'Title', 'Amount', 'Type', 'Category', 'Account', 'Counterparty'])
             
+            from django.utils.timezone import localtime
             for t in qs:
                 yield writer.writerow([
-                    t.timestamp.strftime('%Y-%m-%d %H:%M'), 
+                    localtime(t.timestamp).strftime('%Y-%m-%d'), 
                     t.title, 
                     t.amount, 
                     t.type, 
@@ -294,9 +295,10 @@ class ExportTransactionsView(LoginRequiredMixin, View):
         for cell in ws[1]:
             cell.font = openpyxl.styles.Font(bold=True)
         
+        from django.utils.timezone import localtime
         for t in qs:
             row = [
-                t.timestamp.replace(tzinfo=None), # Excel doesn't like generic TZ
+                localtime(t.timestamp).date(), # Export as Date object so Excel formats it as Short Date
                 t.title,
                 t.amount,
                 t.type,

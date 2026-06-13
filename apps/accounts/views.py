@@ -284,3 +284,42 @@ def switch_account(request, pk):
             messages.error(request, "You do not have access to this account.")
             
     return redirect('dashboard')
+
+from .models import Goal
+from .forms import GoalForm
+
+class GoalCreateView(LoginRequiredMixin, CreateView):
+    model = Goal
+    form_class = GoalForm
+    template_name = 'accounts/goal_form.html'
+    success_url = reverse_lazy('dashboard')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        messages.success(self.request, f"Goal '{form.instance.name}' created.")
+        return super().form_valid(form)
+
+class GoalUpdateView(LoginRequiredMixin, UpdateView):
+    model = Goal
+    form_class = GoalForm
+    template_name = 'accounts/goal_form.html'
+    success_url = reverse_lazy('dashboard')
+
+    def get_queryset(self):
+        return Goal.objects.filter(user=self.request.user)
+
+    def form_valid(self, form):
+        messages.success(self.request, f"Goal '{form.instance.name}' updated.")
+        return super().form_valid(form)
+
+class GoalDeleteView(LoginRequiredMixin, DeleteView):
+    model = Goal
+    template_name = 'accounts/goal_confirm_delete.html'
+    success_url = reverse_lazy('dashboard')
+
+    def get_queryset(self):
+        return Goal.objects.filter(user=self.request.user)
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, "Goal deleted successfully.")
+        return super().delete(request, *args, **kwargs)

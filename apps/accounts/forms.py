@@ -1,5 +1,5 @@
 from django import forms
-from .models import Account, AccountAccess, Category
+from .models import Account, AccountAccess, Category, Goal
 
 class AccountForm(forms.ModelForm):
     class Meta:
@@ -98,3 +98,11 @@ class CategoryForm(forms.ModelForm):
         if limit is not None and limit < 0:
             raise forms.ValidationError("Limit cannot be negative.")
         return limit
+
+class GoalForm(forms.ModelForm):
+    class Meta:
+        model = Goal
+        fields = ['name', 'target_amount', 'saved_amount', 'deadline']
+        widgets = {
+            'deadline': forms.DateInput(attrs={'type': 'date'}),
+        }

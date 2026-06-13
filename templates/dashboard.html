@@ -180,12 +180,46 @@
             </div>
         </div>
 
-        <!-- Widget: Quick Actions / Empty State -->
-        <div class="col-span-12 lg:col-span-4 border-2 border-dashed border-slate-800 bg-slate-900/20 rounded-xl h-48 flex flex-col items-center justify-center group hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer hover-scale">
-            <div class="w-12 h-12 rounded-full border border-slate-700 flex items-center justify-center text-slate-600 group-hover:text-primary group-hover:border-primary transition-colors hover:shadow-neon">
-                <span class="material-icons-round">add_chart</span>
-            </div>
-            <span class="mt-3 text-sm text-slate-600 group-hover:text-primary font-medium">Add Goal</span>
+        <!-- Widget: Goals -->
+        <div class="col-span-12 lg:col-span-4 {% if not goals %}border-2 border-dashed border-slate-800 bg-slate-900/20{% else %}glass-card p-6 pb-2 border border-slate-700/50{% endif %} rounded-xl h-48 flex flex-col items-center justify-center group hover-scale shadow-2xl relative overflow-hidden">
+            {% if goals %}
+                <div class="w-full flex justify-between items-start mb-4 h-full relative z-10 flex-col">
+                    <div class="w-full flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-medium text-slate-400 uppercase tracking-wider">Financial Goals</h3>
+                        <a href="{% url 'add_goal' %}" class="text-xs text-primary font-bold flex items-center gap-1 hover:text-white transition-colors"><span class="material-icons-round text-sm">add</span> Add</a>
+                    </div>
+                    <div class="w-full space-y-4 overflow-y-auto flex-grow custom-scrollbar pr-2 pb-2">
+                        {% for goal in goals %}
+                        <div class="w-full relative group/goal">
+                            <div class="flex justify-between items-end mb-1">
+                                <div>
+                                    <h4 class="text-white text-sm font-semibold truncate max-w-[150px]">{{ goal.name }}</h4>
+                                    <p class="text-xs text-slate-500">₹{{ goal.saved_amount }} of ₹{{ goal.target_amount }}</p>
+                                </div>
+                                <div class="flex flex-col items-end gap-1">
+                                    <div class="opacity-0 group-hover/goal:opacity-100 transition-opacity flex gap-2">
+                                        <a href="{% url 'edit_goal' goal.id %}" class="text-slate-400 hover:text-white" title="Edit"><span class="material-icons-round text-[14px]">edit</span></a>
+                                        <a href="{% url 'delete_goal' goal.id %}" class="text-slate-400 hover:text-red-500" title="Delete"><span class="material-icons-round text-[14px]">delete</span></a>
+                                    </div>
+                                    <span class="text-xs font-bold text-primary">{{ goal.progress_percentage }}%</span>
+                                </div>
+                            </div>
+                            <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-primary shadow-neon rounded-full" style="width: {{ goal.progress_percentage }}%;"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-[60px] -mr-16 -mt-16 pointer-events-none"></div>
+            {% else %}
+                <a href="{% url 'add_goal' %}" class="w-full h-full flex flex-col items-center justify-center hover:border-primary/50 hover:bg-primary/5 transition-all rounded-xl">
+                    <div class="w-12 h-12 rounded-full border border-slate-700 flex items-center justify-center text-slate-600 group-hover:text-primary group-hover:border-primary transition-colors hover:shadow-neon">
+                        <span class="material-icons-round">add_chart</span>
+                    </div>
+                    <span class="mt-3 text-sm text-slate-600 group-hover:text-primary font-medium">Add Goal</span>
+                </a>
+            {% endif %}
         </div>
         
         <!-- Widget: Recent Transactions -->

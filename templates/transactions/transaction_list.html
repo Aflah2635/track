@@ -20,14 +20,14 @@
                 </button>
                 <!-- Dropdown -->
                 <div class="absolute right-0 top-full mt-2 w-48 bg-slate-800 border border-slate-700 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all transform origin-top-right">
-                    <a href="{% url 'export_transactions' %}?format=csv&{{ request.GET.urlencode }}" class="block px-4 py-3 text-sm text-slate-300 hover:bg-slate-700 hover:text-white first:rounded-t-xl transition-colors flex items-center gap-3">
+                    <button type="button" onclick="exportFilteredData('csv')" class="w-full text-left block px-4 py-3 text-sm text-slate-300 hover:bg-slate-700 hover:text-white first:rounded-t-xl transition-colors flex items-center gap-3">
                         <span class="material-icons-round text-emerald-500 text-[18px]">description</span>
                         CSV File
-                    </a>
-                    <a href="{% url 'export_transactions' %}?format=xlsx&{{ request.GET.urlencode }}" class="block px-4 py-3 text-sm text-slate-300 hover:bg-slate-700 hover:text-white last:rounded-b-xl transition-colors flex items-center gap-3">
+                    </button>
+                    <button type="button" onclick="exportFilteredData('xlsx')" class="w-full text-left block px-4 py-3 text-sm text-slate-300 hover:bg-slate-700 hover:text-white last:rounded-b-xl transition-colors flex items-center gap-3">
                         <span class="material-icons-round text-green-500 text-[18px]">table_view</span>
                         Excel File
-                    </a>
+                    </button>
                 </div>
             </div>
             {% else %}
@@ -47,7 +47,7 @@
     <!-- Search & Filters -->
     <div class="mb-8">
         <form method="get" class="glass-card p-4 rounded-xl space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
                 <!-- Search -->
                 <div class="lg:col-span-2 relative">
                     <span class="material-icons-round absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</span>
@@ -79,6 +79,11 @@
                 <!-- Date From -->
                 <div class="relative">
                     <input type="date" name="date_from" value="{{ request.GET.date_from }}" class="w-full bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all outline-none [color-scheme:dark]" placeholder="From Date">
+                </div>
+
+                <!-- Date To -->
+                <div class="relative">
+                    <input type="date" name="date_to" value="{{ request.GET.date_to }}" class="w-full bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all outline-none [color-scheme:dark]" placeholder="To Date">
                 </div>
             </div>
             
@@ -186,4 +191,17 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+function exportFilteredData(format) {
+    const form = document.querySelector('form.glass-card');
+    const formData = new FormData(form);
+    const params = new URLSearchParams(formData);
+    params.set('format', format);
+    
+    // Convert multiple selects to parameters if necessary. No multiple selects here.
+    const url = "{% url 'export_transactions' %}?" + params.toString();
+    window.location.href = url;
+}
+</script>
 {% endblock %}
