@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; padding: 20px; }
+  .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; }
+  .btn { display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; }
+  .footer { margin-top: 30px; font-size: 12px; color: #6b7280; text-align: center; }
+  .highlight { font-weight: bold; color: #111827; }
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #111827; color: #f9fafb; }
+    .container { background: #1f2937; color: #f9fafb; }
+    .btn { background-color: #2563eb; }
+    .highlight { color: #f9fafb; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h2>You've Been Invited to a Shared Account</h2>
+    <p>Hi {{ invitee.username }},</p>
+    <p><span class="highlight">{{ inviter.username }}</span> has invited you to access their Expense Tracker account: <span class="highlight">"{{ account.name }}"</span>.</p>
+    <p>You have been assigned the following role: <span class="highlight">{{ level }}</span>.</p>
+    <p style="text-align: center; margin: 30px 0;">
+      <a href="{{ login_url }}" class="btn">View Account</a>
+    </p>
+    <div class="footer">
+      &copy; 2026 Expense Tracker. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>

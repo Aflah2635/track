@@ -1,0 +1,14 @@
+Hi {{ user.username }},
+
+{% if days_left == 0 %}
+Your {{ plan.get_name_display }} subscription expired today.
+Action Required: You will lose access to premium features until you renew.
+{% else %}
+Your {{ plan.get_name_display }} subscription will expire in {{ days_left }} days on {{ expiry_date|date:"F j, Y" }}.
+Please renew your subscription to maintain access to premium features.
+{% endif %}
+
+To renew your subscription, visit:
+{{ renew_url }}
+
+© 2026 Expense Tracker. All rights reserved.

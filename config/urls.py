@@ -16,8 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.auth import views as auth_views
+from apps.users.forms import CustomPasswordResetForm
 from apps.core.views import home, dashboard
-from apps.users.views import SignUpView
+from apps.users.views import SignUpView, CustomLoginView
 from apps.accounts.views import (
     AccountCreateView, share_account, revoke_access, switch_account,
     AccountListView, AccountUpdateView, AccountDeleteView,
@@ -37,9 +39,21 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('custom-admin/', include('apps.custom_admin.urls', namespace='custom_admin')),
     path('users/', include('apps.users.urls')),
+    
+    # Custom Login
+    path('accounts/login/', CustomLoginView.as_view(), name='login'),
     path('accounts/', include('django.contrib.auth.urls')),
+    
     path('signup/', SignUpView.as_view(), name='signup'),
     
+    # Password Reset URLs
+    path('password_reset/', auth_views.PasswordResetView.as_view(
+        form_class=CustomPasswordResetForm
+    ), name='password_reset'),
+    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+
     path('', home, name='home'),
     path('dashboard/', dashboard, name='dashboard'),
     path('subscriptions/', include('apps.subscriptions.urls')),

@@ -4,6 +4,7 @@ from .models import SubscriptionPlan
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from django.views import View
+from apps.notifications.utils import send_tracked_email
 
 class PricingView(LoginRequiredMixin, ListView):
     model = SubscriptionPlan
@@ -25,5 +26,22 @@ class SubscriptionSwitchView(LoginRequiredMixin, View):
         from apps.subscriptions.utils import enforce_subscription_limits
         enforce_subscription_limits(request.user)
         
+        # Send Premium Purchase Confirmation if upgrading to Plus/Pro
+        if plan.name in ['PLUS', 'PRO']:
+            context = {
+                'user': request.user,
+                'plan': plan,
+                'subscription': request.user.subscription,
+                'manage_url': request.build_absolute_uri('/subscriptions/')
+            }
+            send_tracked_email(
+                email_type='PREMIUM_PURCHASE',
+                subject='Premium Subscription Activated',
+                template_name='premium_purchase',
+                context=context,
+                recipient_list=[request.user.email],
+                user=request.user
+            )
+
         messages.success(request, f"Successfully switched to {plan.get_name_display()} Plan!")
         return redirect('dashboard')

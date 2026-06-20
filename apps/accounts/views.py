@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from .models import Account, AccountAccess
 from .forms import AccountForm, AccountShareForm
+from apps.notifications.utils import send_tracked_email
 
 class AccountCreateView(LoginRequiredMixin, CreateView):
     model = Account
@@ -59,6 +60,24 @@ def share_account(request, pk):
                         user=user_to_share,
                         defaults={'level': level}
                     )
+                    
+                    if created:
+                        context = {
+                            'account': account,
+                            'inviter': request.user,
+                            'invitee': user_to_share,
+                            'level': access.get_level_display(),
+                            'login_url': request.build_absolute_uri(reverse_lazy('login'))
+                        }
+                        send_tracked_email(
+                            email_type='INVITATION',
+                            subject="You've Been Invited to a Shared Account",
+                            template_name='shared_account_invite',
+                            context=context,
+                            recipient_list=[user_to_share.email],
+                            user=user_to_share
+                        )
+
                     messages.success(request, f"Account shared with {user_to_share.username} ({level}).")
                     return redirect('dashboard')
             except User.DoesNotExist:

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Notification, Broadcast
+from .models import Notification, Broadcast, EmailLog
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
@@ -16,3 +16,10 @@ class BroadcastAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         # The signal handles the actual sending
         super().save_model(request, obj, form, change)
+
+@admin.register(EmailLog)
+class EmailLogAdmin(admin.ModelAdmin):
+    list_display = ('recipient', 'email_type', 'subject', 'status', 'sent_at')
+    list_filter = ('status', 'email_type', 'sent_at')
+    search_fields = ('recipient', 'subject', 'error_message')
+    readonly_fields = ('user', 'email_type', 'recipient', 'subject', 'status', 'sent_at', 'error_message')

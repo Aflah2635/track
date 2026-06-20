@@ -1,0 +1,10 @@
+Hi {{ invitee.username }},
+
+{{ inviter.username }} has invited you to access their Expense Tracker account: "{{ account.name }}".
+
+You have been assigned the following role: {{ level }}.
+
+To view the account, log in at:
+{{ login_url }}
+
+© 2026 Expense Tracker. All rights reserved.

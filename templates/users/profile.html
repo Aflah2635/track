@@ -39,6 +39,21 @@
                             <span class="text-slate-200 font-medium">{{ user.last_login|date:"M d, H:i" }}</span>
                         </div>
                     </div>
+                    
+                    <!-- Current Session Details -->
+                    <div class="border-t border-slate-800 pt-4 mt-4 space-y-4 text-left">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Current Session</p>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-500">Browser Remembered</span>
+                            <span class="{% if session_remembered %}text-emerald-400{% else %}text-amber-400{% endif %} font-medium">
+                                {% if session_remembered %}Yes{% else %}No{% endif %}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-500">Active Status</span>
+                            <span class="text-emerald-400 font-medium">{{ session_active }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

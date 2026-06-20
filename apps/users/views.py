@@ -4,14 +4,34 @@ from django.views.generic import ListView, RedirectView, TemplateView, View
 from django.views.generic.edit import CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import logout, update_session_auth_hash
+from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
 from django.contrib.sessions.models import Session
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth import get_user_model
+from apps.notifications.utils import send_tracked_email
 from .forms import CustomUserCreationForm, ProfileUpdateForm
 from .models import LoginActivity
 
 from django_ratelimit.decorators import ratelimit
 from django.utils.decorators import method_decorator
+
+class CustomLoginView(LoginView):
+    template_name = 'registration/login.html'
+    
+    def form_valid(self, form):
+        remember_me = self.request.POST.get('remember_me', False)
+        if remember_me:
+            # 30 days
+            self.request.session.set_expiry(2592000)
+        else:
+            # Browser close
+            self.request.session.set_expiry(0)
+            
+        return super().form_valid(form)
 
 class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = 'users/profile.html'
@@ -20,6 +40,15 @@ class ProfileView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['profile_form'] = ProfileUpdateForm(instance=self.request.user)
         context['password_form'] = PasswordChangeForm(self.request.user)
+        
+        # Determine if session is remembered
+        # If expiry is 0, it expires on browser close. Otherwise it's remembered.
+        expiry_age = self.request.session.get_expiry_age()
+        is_remembered = expiry_age > 0 and not self.request.session.get_expire_at_browser_close()
+        
+        context['session_remembered'] = is_remembered
+        context['session_active'] = "Yes" if self.request.user.is_authenticated else "No"
+        
         return context
 
 class ProfileUpdateView(LoginRequiredMixin, View):
@@ -55,6 +84,48 @@ class SignUpView(CreateView):
     form_class = CustomUserCreationForm
     success_url = reverse_lazy('login')
     template_name = 'registration/signup.html'
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        user = self.object
+        # Send verification email
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        verify_url = self.request.build_absolute_uri(
+            reverse_lazy('verify_email', kwargs={'uidb64': uid, 'token': token})
+        )
+        context = {
+            'user': user,
+            'verify_url': verify_url,
+        }
+        send_tracked_email(
+            email_type='VERIFICATION',
+            subject='Verify Your Email Address',
+            template_name='verify_email',
+            context=context,
+            recipient_list=[user.email],
+            user=user
+        )
+        messages.success(self.request, 'Account created! Please check your email to verify your account.')
+        return response
+
+class VerifyEmailView(View):
+    def get(self, request, uidb64, token):
+        User = get_user_model()
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user is not None and default_token_generator.check_token(user, token):
+            user.is_verified = True
+            user.save()
+            messages.success(request, 'Your email has been verified. You can now log in.')
+            return redirect('login')
+        else:
+            messages.error(request, 'The verification link is invalid or has expired.')
+            return redirect('login')
 
 class SecuritySettingsView(LoginRequiredMixin, ListView):
     model = LoginActivity

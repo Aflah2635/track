@@ -1,0 +1,9 @@
+Hi {{ user.username }},
+
+Welcome to Expense Tracker! Please verify your email address by visiting the link below. This link will expire in 24 hours.
+
+{{ verify_url }}
+
+If you didn't create an account, you can safely ignore this email.
+
+© 2026 Expense Tracker. All rights reserved.

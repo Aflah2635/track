@@ -36,3 +36,22 @@ class Broadcast(models.Model):
     def __str__(self):
         return f"Broadcast: {self.message[:50]}..."
 
+class EmailLog(models.Model):
+    STATUS_CHOICES = [
+        ('SENT', 'Sent'),
+        ('FAILED', 'Failed'),
+    ]
+    
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='email_logs')
+    email_type = models.CharField(max_length=50, help_text="e.g., VERIFICATION, PASSWORD_RESET, INVITATION")
+    recipient = models.EmailField()
+    subject = models.CharField(max_length=255)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='SENT')
+    sent_at = models.DateTimeField(auto_now_add=True)
+    error_message = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-sent_at']
+
+    def __str__(self):
+        return f"{self.email_type} to {self.recipient} - {self.status}"

@@ -6,6 +6,8 @@ class CustomUser(AbstractUser):
     phone = models.CharField(max_length=20, blank=True, null=True)
     is_frozen = models.BooleanField(default=False, help_text="Designates whether this user has been frozen.")
     force_logout_time = models.DateTimeField(null=True, blank=True, help_text="If set, user will be forced to logout if their session started before this time.")
+    is_verified = models.BooleanField(default=False, help_text="Designates whether this user has verified their email address.")
+
     
     def __str__(self):
         return self.username

@@ -1,0 +1,13 @@
+Hi {{ user.username }},
+
+Thank you for upgrading to the {{ plan.get_name_display }} plan! Your premium features are now active.
+
+Plan Details:
+Started: {{ subscription.start_date|date:"F j, Y" }}
+{% if subscription.end_date %}Renews: {{ subscription.end_date|date:"F j, Y" }}{% endif %}
+Amount: ${{ plan.price }}/month
+
+To manage your subscription, visit:
+{{ manage_url }}
+
+© 2026 Expense Tracker. All rights reserved.

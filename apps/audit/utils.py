@@ -7,6 +7,7 @@ class LogEvents:
     LOGOUT = "User Logout"
     LOGIN_FAILED = "Login Failed"
     REGISTER = "User Registration"
+    PASSWORD_RESET_REQUESTED = "Password Reset Requested"
     PASSWORD_CHANGED = "Password Changed"
     PROFILE_UPDATED = "Profile Updated"
     
@@ -84,7 +85,7 @@ def log_to_discord(event_type, title, user, details=None, color=None, emoji="ℹ
     # Channel Routing
     channel_name = "system-logs" # Default
     
-    if any(x in event_type for x in [LogEvents.LOGIN, LogEvents.LOGOUT, LogEvents.LOGIN_FAILED, LogEvents.REGISTER, LogEvents.PASSWORD_CHANGED, LogEvents.PROFILE_UPDATED]):
+    if any(x in event_type for x in [LogEvents.LOGIN, LogEvents.LOGOUT, LogEvents.LOGIN_FAILED, LogEvents.REGISTER, LogEvents.PASSWORD_RESET_REQUESTED, LogEvents.PASSWORD_CHANGED, LogEvents.PROFILE_UPDATED]):
         channel_name = "auth-logs"
         
     elif any(x in event_type for x in [LogEvents.TRANSACTION_CREATED, LogEvents.TRANSACTION_UPDATED, LogEvents.TRANSACTION_DELETED, LogEvents.DATA_EXPORTED, LogEvents.STATEMENT_GENERATED]):
