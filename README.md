@@ -22,11 +22,12 @@ A robust, production-ready web application for managing personal and shared fina
 
 ### 🚀 Recent Updates (v2)
 
+- **Email Notifications**: Added robust HTML/TXT email templates via Gmail SMTP for account verification, password resets, shared account invites, and subscription updates.
+- **Advanced Session Security**: Added a "Remember Me" toggle with secure, long-lived cookies (30-day persistence) and a Session Management view on the profile page.
 - **Subscription Logic**: Implemented smart account freezing/unfreezing based on subscription plans (Basic, Plus, Pro).
 - **Debt Settlement**: Added a dedicated "Settle" button for Lend/Borrow transactions to easily clear outstanding debts.
 - **Enhanced Dashboard**: Added "Cash Flow" statistics (Lend vs Borrow) to the main dashboard.
-- **Stability Improvements**: Fixed PDF generation issues, CSV/Excel export bugs, and template syntax errors.
-- **UI Polish**: Standardized custom dropdowns across all forms and refined the Profile page layout.
+- **Discord Enhancements**: Expanded audit logging to include real-time password reset tracking.
 
 ## 💻 Tech Stack
 
