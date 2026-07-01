@@ -47,7 +47,7 @@ A robust, production-ready web application for managing personal and shared fina
 1.  **Clone the Repository**
 
     ```bash
-    git clone [<repository-url>](https://github.com/Aflah2635/track.git)
+    git clone https://github.com/Aflah2635/track.git
     cd track
     ```
 
