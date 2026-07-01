@@ -30,10 +30,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-twa#6ez#or+%7!n+u)_)q
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "aflah263.pythonanywhere.com",
     "127.0.0.1",
     "localhost",
-    "192.168.18.30"
 ]
 
 
