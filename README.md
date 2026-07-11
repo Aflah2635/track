@@ -65,14 +65,21 @@ A robust, production-ready web application for managing personal and shared fina
     ```
 
 4.  **Environment Configuration**
-    Create a `.env` file in the root directory:
+    Copy `.env.example` to `.env` in the root directory and configure your variables:
 
     ```ini
     DEBUG=True
     SECRET_KEY=your-secret-key-here
+
+    # Discord Bot Setup (Optional)
     DISCORD_BOT_TOKEN=your-discord-bot-token
     DISCORD_GUILD_ID=your-server-id
     DISCORD_ADMIN_ROLE_ID=optional-admin-role-id
+
+    # Email SMTP Configuration (Gmail App Password recommended)
+    EMAIL_HOST_USER=your-email@gmail.com
+    EMAIL_HOST_PASSWORD=your-gmail-app-password
+    DEFAULT_FROM_EMAIL=your-email@gmail.com
     ```
 
 5.  **Discord Bot Setup (Optional)**
